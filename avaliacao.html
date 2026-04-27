@@ -208,75 +208,59 @@
   @media(max-width:480px){.candidate-grid{grid-template-columns:repeat(3,1fr)}.stats-row{grid-template-columns:repeat(2,1fr)}}
   ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-  /* ── GRADE STYLES ── */
-  .grade-pills{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.75rem;}
-  .grade-pill{padding:.3rem .65rem;border-radius:4px;border:1.5px solid var(--border);background:var(--white);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;color:var(--text-muted);font-family:'DM Sans',sans-serif;}
+  /* ══ GRADE STYLES ══ */
+  .grade-pills{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.6rem;}
+  .grade-pill{padding:.28rem .6rem;border-radius:4px;border:1.5px solid var(--border);background:var(--white);font-size:.76rem;font-weight:700;cursor:pointer;transition:all .15s;color:var(--text-muted);font-family:'DM Sans',sans-serif;}
   .grade-pill:hover{border-color:var(--teal);color:var(--teal);}
-  .grade-pill.sel-Aplus,.grade-pill.sel-A,.grade-pill.sel-Aminus{border-color:#16a34a!important;background:#dcfce7!important;color:#15803d!important;}
-  .grade-pill.sel-Bplus,.grade-pill.sel-B,.grade-pill.sel-Bminus{border-color:#2563eb!important;background:#dbeafe!important;color:#1d4ed8!important;}
-  .grade-pill.sel-Cplus,.grade-pill.sel-C,.grade-pill.sel-Cminus{border-color:#ca8a04!important;background:#fef9c3!important;color:#a16207!important;}
-  .grade-pill.sel-Dplus,.grade-pill.sel-D,.grade-pill.sel-Dminus{border-color:#ea580c!important;background:#ffedd5!important;color:#c2410c!important;}
-  .grade-pill.sel-F{border-color:#dc2626!important;background:#fee2e2!important;color:#dc2626!important;}
-  .grade-chip{font-size:.72rem;padding:.15rem .45rem;border-radius:3px;font-weight:600;display:inline-block;}
-  .gc-Aplus,.gc-A,.gc-Aminus{background:#dcfce7;color:#15803d;}
-  .gc-Bplus,.gc-B,.gc-Bminus{background:#dbeafe;color:#1d4ed8;}
-  .gc-Cplus,.gc-C,.gc-Cminus{background:#fef9c3;color:#a16207;}
-  .gc-Dplus,.gc-D,.gc-Dminus{background:#ffedd5;color:#c2410c;}
+  .gp-A{border-color:#16a34a!important;background:#dcfce7!important;color:#15803d!important;}
+  .gp-B{border-color:#2563eb!important;background:#dbeafe!important;color:#1d4ed8!important;}
+  .gp-C{border-color:#ca8a04!important;background:#fef9c3!important;color:#a16207!important;}
+  .gp-D{border-color:#ea580c!important;background:#ffedd5!important;color:#c2410c!important;}
+  .gp-F{border-color:#dc2626!important;background:#fee2e2!important;color:#dc2626!important;}
+  .grade-chip-sm{font-size:.72rem;padding:.12rem .45rem;border-radius:3px;font-weight:700;display:inline-block;}
+  .gc-A{background:#dcfce7;color:#15803d;}
+  .gc-B{background:#dbeafe;color:#1d4ed8;}
+  .gc-C{background:#fef9c3;color:#a16207;}
+  .gc-D{background:#ffedd5;color:#c2410c;}
   .gc-F{background:#fee2e2;color:#dc2626;}
   .gc-none{background:#f3f4f6;color:#9ca3af;}
-  .grade-section-wrap{border:1px solid var(--border);border-radius:6px;margin-bottom:.75rem;overflow:hidden;}
-  .grade-section-hd{padding:.7rem 1rem;background:var(--teal-light);display:flex;align-items:center;gap:.6rem;}
-  .grade-section-hd-title{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:600;color:var(--teal-dark);flex:1;}
-  .grade-section-bd{padding:1rem;}
-  .grade-sub-label{font-size:.75rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem;display:block;}
-  .grade-comment{width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);resize:vertical;min-height:60px;outline:none;transition:border-color .2s;}
-  .grade-comment:focus{border-color:var(--teal);}
-  .final-avg-box{background:linear-gradient(135deg,var(--teal-dark),var(--teal));border-radius:8px;padding:1.25rem;margin-top:1rem;display:flex;align-items:center;gap:1rem;}
-  .final-avg-letter{font-family:'Cormorant Garamond',serif;font-size:3.5rem;font-weight:700;color:var(--gold);line-height:1;}
-  .final-avg-info{flex:1;}
-  .final-avg-label{font-size:.75rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.07em;}
-  .final-avg-desc{font-size:.85rem;color:rgba(255,255,255,.85);margin-top:.2rem;}
-  .final-comment{width:100%;padding:.6rem .8rem;border:1px solid rgba(255,255,255,.2);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--white);background:rgba(255,255,255,.1);resize:vertical;min-height:70px;outline:none;margin-top:.75rem;}
-  .final-comment::placeholder{color:rgba(255,255,255,.4);}
-  .final-comment:focus{border-color:rgba(255,255,255,.4);outline:none;}
-  .btn-save-grades{background:var(--gold);color:var(--teal-dark);border:none;padding:.65rem 1.5rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:.75rem;}
-  .btn-save-grades:hover{background:#e0ba5c;}
-  .cand-row-avg{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--teal-dark);white-space:nowrap;flex-shrink:0;min-width:2.5rem;text-align:right;}
-
-  /* ── CANDIDATE GRADE VIEW ── */
-  .cand-grade-hero{background:linear-gradient(135deg,var(--teal-dark),var(--teal));border-radius:10px;padding:1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
-  .cand-grade-hero::after{content:'✝';position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);font-size:4rem;color:rgba(255,255,255,.06);font-family:serif;}
-  .cand-grade-hero h2{font-family:'Cormorant Garamond',serif;color:var(--white);font-size:1.6rem;margin-bottom:.25rem;}
-  .cand-grade-hero p{color:rgba(255,255,255,.6);font-size:.85rem;margin-bottom:1.25rem;}
-  .overall-avg-row{display:flex;align-items:center;gap:1rem;}
-  .overall-avg-letter{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:700;color:var(--gold);line-height:1;}
-  .overall-avg-info{flex:1;}
-  .overall-avg-label{font-size:.72rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.07em;}
-  .overall-avg-desc{font-size:.9rem;color:rgba(255,255,255,.85);margin-top:.15rem;}
-  .overall-avg-comment{font-size:.82rem;color:rgba(255,255,255,.65);margin-top:.4rem;font-style:italic;}
-  .grade-view-card{background:var(--white);border:1px solid var(--border);border-radius:8px;margin-bottom:1rem;overflow:hidden;}
-  .grade-view-header{padding:1rem 1.25rem;display:flex;align-items:center;gap:.75rem;cursor:pointer;user-select:none;}
-  .grade-view-header:hover{background:var(--teal-light);}
-  .grade-view-icon{width:36px;height:36px;background:var(--teal-light);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
-  .grade-view-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;color:var(--teal-dark);flex:1;}
-  .grade-view-avg{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;padding:.1rem .5rem;border-radius:4px;}
-  .grade-view-chevron{color:var(--text-muted);font-size:.85rem;margin-left:.3rem;transition:transform .2s;}
-  .grade-view-card.open .grade-view-chevron{transform:rotate(180deg);}
-  .grade-view-body{display:none;border-top:1px solid var(--border);padding:1rem 1.25rem;}
-  .grade-view-card.open .grade-view-body{display:block;}
-  .grade-item-row{display:flex;align-items:flex-start;gap:.75rem;padding:.65rem 0;border-bottom:1px solid var(--border);}
-  .grade-item-row:last-child{border-bottom:none;}
-  .grade-item-info{flex:1;}
-  .grade-item-name{font-size:.88rem;font-weight:500;color:var(--text);}
-  .grade-item-comment{font-size:.78rem;color:var(--text-muted);margin-top:.25rem;font-style:italic;line-height:1.4;}
-  .grade-item-chip{font-size:.8rem;padding:.2rem .55rem;border-radius:4px;font-weight:700;white-space:nowrap;flex-shrink:0;}
-  .gic-A{background:#dcfce7;color:#15803d;}
-  .gic-B{background:#dbeafe;color:#1d4ed8;}
-  .gic-C{background:#fef9c3;color:#a16207;}
-  .gic-D{background:#ffedd5;color:#c2410c;}
-  .gic-F{background:#fee2e2;color:#dc2626;}
-  .gic-none{background:#f3f4f6;color:#9ca3af;}
-  .no-grades-msg{text-align:center;padding:2rem;color:var(--text-muted);font-size:.9rem;}
+  .grade-topic-item{padding:.65rem 0;border-bottom:1px solid var(--border);}
+  .grade-topic-item:last-child{border-bottom:none;}
+  .grade-topic-name-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;}
+  .grade-topic-label{font-size:.85rem;font-weight:500;color:var(--text);flex:1;}
+  .grade-comment-input{width:100%;padding:.45rem .65rem;border:1px solid var(--border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.8rem;color:var(--text);resize:vertical;min-height:52px;outline:none;transition:border-color .2s;margin-top:.35rem;}
+  .grade-comment-input:focus{border-color:var(--teal);}
+  .sec-avg-row{display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;background:var(--white);border-radius:6px;border:1px solid var(--border);margin-bottom:.75rem;}
+  .sec-avg-letter{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;padding:.1rem .5rem;border-radius:4px;}
+  .sec-avg-info{flex:1;}
+  .sec-avg-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;}
+  .sec-avg-desc{font-size:.8rem;font-weight:500;color:var(--text);}
+  .btn-save-all{background:var(--gold);color:var(--teal-dark);border:none;padding:.6rem 1.4rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;}
+  .btn-save-all:hover{background:#e0ba5c;}
+  .overall-grade-card{background:linear-gradient(135deg,var(--teal-dark),var(--teal));border-radius:10px;padding:1.5rem;margin-bottom:1rem;display:flex;align-items:center;gap:1.25rem;}
+  .overall-grade-letter{font-family:'Cormorant Garamond',serif;font-size:3.5rem;font-weight:700;color:var(--gold);line-height:1;}
+  .overall-grade-info{flex:1;}
+  .overall-grade-label{font-size:.72rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.07em;}
+  .overall-grade-desc{font-size:.9rem;color:rgba(255,255,255,.85);margin-top:.2rem;}
+  .overall-grade-comment{font-size:.8rem;color:rgba(255,255,255,.65);margin-top:.35rem;font-style:italic;}
+  .final-comment-wrap{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:.75rem 1rem;margin-top:.75rem;}
+  .final-comment-textarea{width:100%;background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--white);resize:vertical;min-height:60px;outline:none;}
+  .final-comment-textarea::placeholder{color:rgba(255,255,255,.4);}
+  /* candidate read-only view */
+  .cand-grade-section{background:var(--white);border:1px solid var(--border);border-radius:8px;margin-bottom:.75rem;overflow:hidden;}
+  .cand-grade-sec-header{padding:.875rem 1.1rem;background:var(--teal-light);display:flex;align-items:center;gap:.6rem;cursor:pointer;}
+  .cand-grade-sec-header:hover{background:#d5eaea;}
+  .cand-grade-sec-title{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--teal-dark);flex:1;}
+  .cand-grade-sec-body{display:none;border-top:1px solid var(--border);padding:.875rem 1.1rem;}
+  .cand-grade-section.open .cand-grade-sec-body{display:block;}
+  .cand-grade-section.open .section-chevron{transform:rotate(180deg);}
+  .cand-item-row{display:flex;align-items:flex-start;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--border);}
+  .cand-item-row:last-child{border-bottom:none;}
+  .cand-item-info{flex:1;}
+  .cand-item-name{font-size:.88rem;font-weight:500;color:var(--text);}
+  .cand-item-comment{font-size:.78rem;color:var(--text-muted);font-style:italic;margin-top:.2rem;line-height:1.4;}
+  .cand-item-chip{font-size:.8rem;padding:.2rem .55rem;border-radius:4px;font-weight:700;white-space:nowrap;flex-shrink:0;}
+  .no-grade-yet{text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.875rem;font-style:italic;}
 </style>
 </head>
 <body>
@@ -290,11 +274,11 @@
 <!-- LANDING -->
 <div id="screen-landing" class="screen">
   <div class="landing-cross">✝</div>
-  <h1 class="landing-title">Avaliação<br>Presbiterial</h1>
+  <h1 class="landing-title">Ordenação ao<br>Presbitério</h1>
   <p class="landing-sub">Zion Church · Junho 2026</p>
   <p class="landing-verse">"Se alguém aspira ao episcopado, excelente obra almeja." — 1 Tm 3.1</p>
   <div class="landing-buttons">
-    <button class="btn-primary" onclick="showScreen('screen-select-candidate')">Ver minhas notas</button>
+    <button class="btn-primary" onclick="showScreen('screen-select-candidate')">Sou Candidato</button>
     <button class="btn-outline" onclick="showScreen('screen-coord-login')">Acesso Restrito</button>
   </div>
 </div>
@@ -342,7 +326,7 @@
 <!-- COORDINATOR DASHBOARD -->
 <div id="screen-coordinator" class="screen">
   <div class="app-header">
-    <div class="logo">Zion <span>Avaliação</span></div>
+    <div class="logo">Zion <span>Escrivão</span></div>
     <div class="header-user">
       <span class="sync-dot"></span><span class="sync-label">ao vivo</span>
       <button class="btn-logout" style="margin-left:.5rem" onclick="showScreen('screen-landing')">Sair</button>
@@ -549,80 +533,21 @@ window.openCand = key => {
   const c=allCandidates[key]; if(!c) return;
   currentKey=key;
   document.getElementById('cand-header-name').textContent=c.name.split(' ')[0];
-  renderCandGrades(c);
+  renderCandDash(c);
   showScreen('screen-candidate');
   if(unsubCand) unsubCand();
   unsubCand=onValue(ref(db,`candidates/${key}`),snap=>{
-    const d=snap.val();
-    if(d){ allCandidates[key]=d; renderCandGrades(d); }
+    const d=snap.val(); 
+    if(d){
+      allCandidates[key]=d;
+      // Remember which sections are open
+      const openSecs = Array.from(document.querySelectorAll('.section-card.open')).map(el=>el.id);
+      renderCandDash(d);
+      // Restore open sections
+      openSecs.forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add('open'); });
+    }
   });
 };
-
-function gicClass(g){
-  if(!g) return 'gic-none';
-  if(g.startsWith('A')) return 'gic-A';
-  if(g.startsWith('B')) return 'gic-B';
-  if(g.startsWith('C')) return 'gic-C';
-  if(g.startsWith('D')) return 'gic-D';
-  return 'gic-F';
-}
-
-function renderCandGrades(c){
-  const overall = calcOverallAvg(c.grades);
-  const finalComment = c.grades?.final?.comment || '';
-  const hasAny = SECTIONS.some(sec=>sec.topics.some(t=>c.grades?.[sec.id]?.[t.id]?.grade));
-
-  let html = `<div style="max-width:680px;margin:0 auto;padding:1.5rem;">
-    <div class="cand-grade-hero">
-      <h2>${escH(c.name)}</h2>
-      <p>Avaliação Presbiterial · Zion Church 2026</p>
-      ${hasAny ? `<div class="overall-avg-row">
-        <div class="overall-avg-letter">${overall||'—'}</div>
-        <div class="overall-avg-info">
-          <div class="overall-avg-label">Média geral</div>
-          <div class="overall-avg-desc">${overall?descGradeC(overall):'Em avaliação'}</div>
-          ${finalComment?`<div class="overall-avg-comment">"${escH(finalComment)}"</div>`:''}
-        </div>
-      </div>` : `<p style="color:rgba(255,255,255,.5);font-style:italic">Aguardando avaliação do Escrivão</p>`}
-    </div>`;
-
-  if(!hasAny){
-    html += `<div class="no-grades-msg">📋 Suas avaliações aparecerão aqui quando o Escrivão lançar as notas.</div>`;
-  } else {
-    SECTIONS.forEach(sec=>{
-      const secAvg = calcSecAvg(c, sec);
-      const secHasGrade = sec.topics.some(t=>c.grades?.[sec.id]?.[t.id]?.grade);
-      if(!secHasGrade) return;
-
-      html += `<div class="grade-view-card" id="gv-${sec.id}">
-        <div class="grade-view-header" onclick="toggleGradeView('gv-${sec.id}')">
-          <div class="grade-view-icon">${sec.icon}</div>
-          <div class="grade-view-title">${sec.title}</div>
-          ${secAvg?`<span class="grade-view-avg ${gicClass(secAvg)}">${escH(secAvg)}</span>`:''}
-          <span class="grade-view-chevron">▼</span>
-        </div>
-        <div class="grade-view-body">
-          ${sec.topics.map(t=>{
-            const td=c.grades?.[sec.id]?.[t.id]||{};
-            if(!td.grade && !td.comment) return '';
-            return `<div class="grade-item-row">
-              <div class="grade-item-info">
-                <div class="grade-item-name">${t.name}</div>
-                ${td.comment?`<div class="grade-item-comment">"${escH(td.comment)}"</div>`:''}
-              </div>
-              ${td.grade?`<span class="grade-item-chip ${gicClass(td.grade)}">${escH(td.grade)}</span>`:''}
-            </div>`;
-          }).join('')}
-        </div>
-      </div>`;
-    });
-  }
-
-  html += '</div>';
-  document.getElementById('candidate-content').innerHTML = html;
-}
-
-window.toggleGradeView = id => document.getElementById(id).classList.toggle('open');
 
 // ── Google Drive Upload (via picker + user's own auth) ──
 // Since direct service account from browser is not feasible without a backend,
@@ -699,6 +624,7 @@ function renderCandDash(c){
           </a>
           <p style="font-size:.75rem;color:var(--text-muted);text-align:center;">Após enviar, marque os itens acima como concluídos ✓</p>
         </div>
+
       </div>
     </div>`;
   });
@@ -740,6 +666,7 @@ function renderCandDash(c){
 
 
 window.toggleSec = id => document.getElementById(id).classList.toggle('open');
+window.toggleCandSec = el => el.parentElement.classList.toggle('open');
 window.toggleTopic = async topicId => {
   if(!currentKey) return;
   const c=allCandidates[currentKey];
@@ -779,8 +706,8 @@ window.toggleTopic = async topicId => {
 
 // ── Coordinator ──
 function renderCoord(){
-  const activeTab = document.querySelector('#screen-coordinator .tab-panel.active');
-  if(activeTab && activeTab.id === 'tab-grades') renderGradesList();
+  const gradeTab = document.getElementById('tab-grades');
+  if(gradeTab && gradeTab.classList.contains('active')) renderGradesList();
   const cands=Object.values(allCandidates);
   const tot=cands.length, avg=tot?Math.round(cands.reduce((s,c)=>s+calcPct(c),0)/tot):0;
   const done=cands.filter(c=>calcPct(c)===100).length;
@@ -861,188 +788,6 @@ window.openCandDetail = key => {
   document.getElementById('cand-detail-overlay').classList.add('open');
 };
 
-
-// ── Grade helpers ──
-const GRADES = ['A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','F'];
-const GRADE_POINTS = {'A+':4.3,'A':4.0,'A-':3.7,'B+':3.3,'B':3.0,'B-':2.7,'C+':2.3,'C':2.0,'C-':1.7,'D+':1.3,'D':1.0,'D-':0.7,'F':0.0};
-const GRADE_KEY = g => g.replace('+','plus').replace('-','minus');
-function pointsToGrade(p){
-  if(p>=4.15)return 'A+';if(p>=3.85)return 'A';if(p>=3.5)return 'A-';
-  if(p>=3.15)return 'B+';if(p>=2.85)return 'B';if(p>=2.5)return 'B-';
-  if(p>=2.15)return 'C+';if(p>=1.85)return 'C';if(p>=1.5)return 'C-';
-  if(p>=1.15)return 'D+';if(p>=0.85)return 'D';if(p>=0.5)return 'D-';
-  return 'F';
-}
-function calcSecAvg(c, sec){
-  const gs=sec.topics.map(t=>c.grades?.[sec.id]?.[t.id]?.grade).filter(Boolean);
-  if(!gs.length)return null;
-  const avg=gs.map(g=>GRADE_POINTS[g]||0).reduce((a,b)=>a+b,0)/gs.length;
-  return pointsToGrade(avg);
-}
-function calcAvg(c){
-  const gs=[];
-  SECTIONS.forEach(sec=>sec.topics.forEach(t=>{
-    const g=c.grades?.[sec.id]?.[t.id]?.grade;
-    if(g) gs.push(g);
-  }));
-  if(!gs.length)return null;
-  const avg=gs.map(g=>GRADE_POINTS[g]||0).reduce((a,b)=>a+b,0)/gs.length;
-  return pointsToGrade(avg);
-}
-function descGrade(g){
-  const m={'A+':'Excelência excepcional','A':'Excelente','A-':'Muito bom','B+':'Bom com destaque','B':'Bom','B-':'Bom com ressalvas','C+':'Satisfatório','C':'Regular','C-':'Regular com pendências','D+':'Abaixo do esperado','D':'Insuficiente','D-':'Muito insuficiente','F':'Reprovado'};
-  return m[g]||'';
-}
-
-function renderGradesList(){
-  const keys=Object.keys(allCandidates);
-  if(!keys.length){document.getElementById('grades-list').innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">Nenhum candidato cadastrado.</p>';return;}
-  document.getElementById('grades-list').innerHTML=keys.map(k=>{
-    const c=allCandidates[k],avg=calcAvg(c);
-    const chips=SECTIONS.map(s=>{
-      const avg=calcSecAvg(c,s);
-      return avg?`<span class="grade-chip gc-${GRADE_KEY(avg)}" title="${escH(s.title)}">${escH(avg)}</span>`:'';
-    }).filter(Boolean).join(' ');
-    return `<div class="candidate-row" onclick="openGradeDetail('${escQ(k)}')">
-      <div class="cand-avatar">${ini(c.name)}</div>
-      <div class="cand-row-info">
-        <div class="cand-row-name">${escH(c.name)}</div>
-        <div style="margin-top:.25rem;display:flex;flex-wrap:wrap;gap:.3rem">${chips||'<span style="font-size:.78rem;color:var(--text-muted)">Sem avaliação</span>'}</div>
-      </div>
-      <div class="cand-row-avg">${avg?escH(avg):'—'}</div>
-    </div>`;
-  }).join('');
-}
-
-window.openGradeDetail = key => {
-  const c=allCandidates[key]; if(!c) return;
-
-  let html=`<button class="cand-detail-close" onclick="closeCandDetail()">✕</button>
-    <div class="cand-detail-name">${escH(c.name)}</div>
-    <div class="cand-detail-pct" style="margin-bottom:1.25rem">Avaliação por item · Zion Church 2026</div>`;
-
-  SECTIONS.forEach(sec=>{
-    const secAvgGrade = calcSecAvg(c, sec);
-    html+=`<div class="grade-section-wrap">
-      <div class="grade-section-hd">
-        <span>${sec.icon}</span>
-        <span class="grade-section-hd-title">${sec.title}</span>
-        ${secAvgGrade?`<span class="grade-chip gc-${GRADE_KEY(secAvgGrade)}" title="Média da seção">${escH(secAvgGrade)}</span>`:''}
-      </div>
-      <div class="grade-section-bd">
-        ${sec.topics.map(t=>{
-          const td=c.grades?.[sec.id]?.[t.id]||{};
-          const selG=td.grade||'';
-          const pills=GRADES.map(g=>{
-            const k=GRADE_KEY(g);
-            const sel=selG===g?`sel-${k}`:'';
-            return `<button class="grade-pill ${sel}" onclick="selectTopicGrade('${escQ(key)}','${escQ(sec.id)}','${escQ(t.id)}','${g}')">${g}</button>`;
-          }).join('');
-          return `<div style="padding:.75rem 0;border-bottom:1px solid var(--border);">
-            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
-              <span style="font-size:.85rem;font-weight:500;color:var(--text);flex:1">${t.name}</span>
-              ${selG?`<span class="grade-chip gc-${GRADE_KEY(selG)}">${escH(selG)}</span>`:''}
-            </div>
-            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem">${t.desc}</div>
-            <div class="grade-pills">${pills}</div>
-            <textarea class="grade-comment" id="gc-${escQ(sec.id)}-${escQ(t.id)}"
-              placeholder="Comentário sobre este item..."
-              onblur="saveTopicComment('${escQ(key)}','${escQ(sec.id)}','${escQ(t.id)}')">${escH(td.comment||'')}</textarea>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
-  });
-
-  // Final average
-  const avg=calcAvg(c);
-  const finalComment=c.grades?.final?.comment||'';
-  html+=`<div class="final-avg-box">
-    <div class="final-avg-letter">${avg||'—'}</div>
-    <div class="final-avg-info">
-      <div class="final-avg-label">Média geral de todos os itens</div>
-      <div class="final-avg-desc">${avg?descGrade(avg):'Nenhuma nota atribuída ainda'}</div>
-    </div>
-  </div>
-  <div style="margin-top:.75rem">
-    <span class="grade-sub-label">Parecer final do Escrivão</span>
-    <textarea class="grade-comment" id="gc-final" placeholder="Parecer geral sobre o candidato..."
-      onblur="saveFinalComment('${escQ(key)}')">${escH(finalComment)}</textarea>
-  </div>
-  <button class="btn-save-grades" onclick="saveAllGrades('${escQ(key)}')">💾 Salvar comentários</button>`;
-
-  document.getElementById('cand-detail-box').innerHTML=html;
-  document.getElementById('cand-detail-overlay').classList.add('open');
-};
-
-window.selectTopicGrade = async (key, secId, topicId, grade) => {
-  if(!allCandidates[key].grades) allCandidates[key].grades={};
-  if(!allCandidates[key].grades[secId]) allCandidates[key].grades[secId]={};
-  if(!allCandidates[key].grades[secId][topicId]) allCandidates[key].grades[secId][topicId]={};
-  allCandidates[key].grades[secId][topicId].grade = grade;
-
-  await update(ref(db,`candidates/${key}/grades/${secId}/${topicId}`),{grade});
-
-  // Update pill UI
-  const container = document.getElementById(`gc-${secId}-${topicId}`)?.closest('div[style]');
-  if(container){
-    container.querySelectorAll('.grade-pill').forEach(p=>{
-      GRADES.forEach(g=>p.classList.remove(`sel-${GRADE_KEY(g)}`));
-      if(p.textContent===grade) p.classList.add(`sel-${GRADE_KEY(grade)}`);
-    });
-    // update chip
-    let chip = container.querySelector('.grade-chip');
-    if(!chip){ chip=document.createElement('span'); chip.className='grade-chip'; container.querySelector('div').appendChild(chip); }
-    chip.className=`grade-chip gc-${GRADE_KEY(grade)}`;
-    chip.textContent=grade;
-  }
-
-  // Recalc section average
-  const c=allCandidates[key];
-  const sec=SECTIONS.find(s=>s.id===secId);
-  if(sec){
-    const secAvg=calcSecAvg(c,sec);
-    const hd=document.querySelector(`[onclick*="'${secId}'"]`)?.closest('.grade-section-wrap')?.querySelector('.grade-section-hd');
-    if(hd){
-      let chip=hd.querySelector('.grade-chip');
-      if(secAvg){
-        if(!chip){chip=document.createElement('span');chip.className='grade-chip';hd.appendChild(chip);}
-        chip.className=`grade-chip gc-${GRADE_KEY(secAvg)}`;
-        chip.textContent=secAvg;
-      } else if(chip){ chip.remove(); }
-    }
-  }
-
-  // Recalc overall average
-  const newAvg=calcAvg(c);
-  const letter=document.querySelector('.final-avg-letter');
-  const desc=document.querySelector('.final-avg-desc');
-  if(letter) letter.textContent=newAvg||'—';
-  if(desc) desc.textContent=newAvg?descGrade(newAvg):'Nenhuma nota atribuída ainda';
-
-  showToast(`Nota ${grade} salva`);
-};
-
-window.saveTopicComment = async (key, secId, topicId) => {
-  const el=document.getElementById(`gc-${secId}-${topicId}`); if(!el) return;
-  await update(ref(db,`candidates/${key}/grades/${secId}/${topicId}`),{comment:el.value});
-};
-window.saveFinalComment = async key => {
-  const el=document.getElementById('gc-final'); if(!el) return;
-  await update(ref(db,`candidates/${key}/grades/final`),{comment:el.value});
-};
-window.saveAllGrades = async key => {
-  for(const sec of SECTIONS){
-    for(const t of sec.topics){
-      const el=document.getElementById(`gc-${sec.id}-${t.id}`);
-      if(el) await update(ref(db,`candidates/${key}/grades/${sec.id}/${t.id}`),{comment:el.value});
-    }
-  }
-  const fe=document.getElementById('gc-final');
-  if(fe) await update(ref(db,`candidates/${key}/grades/final`),{comment:fe.value});
-  showToast('✓ Comentários salvos!');
-};
-
 window.closeCandDetail = () => document.getElementById('cand-detail-overlay').classList.remove('open');
 window.saveJejum = async key => {
   const v=document.getElementById('jej-dt-'+key)?.value||'';
@@ -1086,6 +831,250 @@ function renderAddRemove(){
 document.getElementById('cand-detail-overlay').addEventListener('click',e=>{
   if(e.target===document.getElementById('cand-detail-overlay')) closeCandDetail();
 });
+
+// ══ GRADE CONSTANTS & HELPERS ══
+const GRADES_LIST = ['A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','F'];
+const GRADE_PTS = {'A+':4.3,'A':4.0,'A-':3.7,'B+':3.3,'B':3.0,'B-':2.7,'C+':2.3,'C':2.0,'C-':1.7,'D+':1.3,'D':1.0,'D-':0.7,'F':0.0};
+
+function gradeKey(g){ return g.startsWith('A')?'A':g.startsWith('B')?'B':g.startsWith('C')?'C':g.startsWith('D')?'D':'F'; }
+function gcClass(g){ return g ? 'gc-'+gradeKey(g) : 'gc-none'; }
+function gpClass(g){ return g ? 'gp-'+gradeKey(g) : ''; }
+
+function pts2grade(p){
+  if(p>=4.15)return 'A+';if(p>=3.85)return 'A';if(p>=3.5)return 'A-';
+  if(p>=3.15)return 'B+';if(p>=2.85)return 'B';if(p>=2.5)return 'B-';
+  if(p>=2.15)return 'C+';if(p>=1.85)return 'C';if(p>=1.5)return 'C-';
+  if(p>=1.15)return 'D+';if(p>=0.85)return 'D';if(p>=0.5)return 'D-';
+  return 'F';
+}
+function descGrade(g){
+  const m={'A+':'Excelência excepcional','A':'Excelente','A-':'Muito bom','B+':'Bom com destaque','B':'Bom','B-':'Bom com ressalvas','C+':'Satisfatório','C':'Regular','C-':'Regular com pendências','D+':'Abaixo do esperado','D':'Insuficiente','D-':'Muito insuficiente','F':'Reprovado'};
+  return m[g]||'';
+}
+function calcSecAvgG(c, sec){
+  const gs=sec.topics.map(t=>c.grades?.[sec.id]?.[t.id]?.grade).filter(Boolean);
+  if(!gs.length) return null;
+  return pts2grade(gs.map(g=>GRADE_PTS[g]||0).reduce((a,b)=>a+b,0)/gs.length);
+}
+function calcOverallG(c){
+  const gs=[];
+  SECTIONS.forEach(sec=>sec.topics.forEach(t=>{const g=c.grades?.[sec.id]?.[t.id]?.grade;if(g)gs.push(g);}));
+  if(!gs.length) return null;
+  return pts2grade(gs.map(g=>GRADE_PTS[g]||0).reduce((a,b)=>a+b,0)/gs.length);
+}
+
+// ══ GRADES LIST (coordinator) ══
+function renderGradesList(){
+  const keys=Object.keys(allCandidates);
+  if(!keys.length){
+    document.getElementById('grades-list').innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">Nenhum candidato cadastrado.</p>';
+    return;
+  }
+  document.getElementById('grades-list').innerHTML=keys.map(k=>{
+    const c=allCandidates[k], avg=calcOverallG(c);
+    const chips=SECTIONS.map(s=>{
+      const sa=calcSecAvgG(c,s);
+      return sa?`<span class="grade-chip-sm ${gcClass(sa)}" title="${escH(s.title)}">${escH(sa)}</span>`:'';
+    }).filter(Boolean).join(' ');
+    return `<div class="candidate-row" onclick="openGradeDetail('${escQ(k)}')">
+      <div class="cand-avatar">${ini(c.name)}</div>
+      <div class="cand-row-info">
+        <div class="cand-row-name">${escH(c.name)}</div>
+        <div style="margin-top:.25rem;display:flex;flex-wrap:wrap;gap:.3rem">${chips||'<span style="font-size:.76rem;color:var(--text-muted)">Sem avaliação</span>'}</div>
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:var(--teal-dark);min-width:2.5rem;text-align:right">${avg?escH(avg):'—'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══ GRADE DETAIL (coordinator edits) ══
+window.openGradeDetail = key => {
+  const c=allCandidates[key]; if(!c) return;
+  const overall=calcOverallG(c), finalComment=c.grades?.final?.comment||'';
+
+  let html=`<button class="cand-detail-close" onclick="closeCandDetail()">✕</button>
+    <div class="cand-detail-name">${escH(c.name)}</div>
+    <div class="cand-detail-pct" style="margin-bottom:1.25rem">Avaliação das dissertações</div>`;
+
+  SECTIONS.forEach(sec=>{
+    const secAvg=calcSecAvgG(c,sec);
+    html+=`<div class="grade-section-wrap" style="border:1px solid var(--border);border-radius:8px;margin-bottom:.75rem;overflow:hidden;">
+      <div style="padding:.75rem 1rem;background:var(--teal-light);display:flex;align-items:center;gap:.6rem;">
+        <span>${sec.icon}</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--teal-dark);flex:1">${sec.title}</span>
+        ${secAvg?`<span class="grade-chip-sm ${gcClass(secAvg)}">${escH(secAvg)}</span>`:''}
+      </div>
+      <div style="padding:1rem;">
+        ${sec.topics.map(t=>{
+          const td=c.grades?.[sec.id]?.[t.id]||{}, selG=td.grade||'';
+          const pills=GRADES_LIST.map(g=>`<button class="grade-pill ${selG===g?'gp-'+gradeKey(g):''}" onclick="setTopicGrade('${escQ(key)}','${escQ(sec.id)}','${escQ(t.id)}','${g}')">${g}</button>`).join('');
+          return `<div class="grade-topic-item">
+            <div class="grade-topic-name-row">
+              <span class="grade-topic-label">${t.name}</span>
+              ${selG?`<span class="grade-chip-sm ${gcClass(selG)}" id="chip-${escQ(sec.id)}-${escQ(t.id)}">${escH(selG)}</span>`:`<span class="grade-chip-sm gc-none" id="chip-${escQ(sec.id)}-${escQ(t.id)}">—</span>`}
+            </div>
+            <div class="grade-pills">${pills}</div>
+            <textarea class="grade-comment-input" id="cmt-${escQ(sec.id)}-${escQ(t.id)}"
+              placeholder="Comentário sobre este item..."
+              onblur="saveTopicComment('${escQ(key)}','${escQ(sec.id)}','${escQ(t.id)}')">${escH(td.comment||'')}</textarea>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+
+  // Final overall
+  html+=`<div class="overall-grade-card" id="overall-card">
+    <div class="overall-grade-letter" id="overall-letter">${overall||'—'}</div>
+    <div class="overall-grade-info">
+      <div class="overall-grade-label">Média geral</div>
+      <div class="overall-grade-desc" id="overall-desc">${overall?descGrade(overall):'Nenhuma nota atribuída'}</div>
+    </div>
+  </div>
+  <div style="margin-bottom:.5rem"><span style="font-size:.75rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em">Parecer final</span></div>
+  <div class="final-comment-wrap">
+    <textarea class="final-comment-textarea" id="final-cmt-${escQ(key)}"
+      placeholder="Parecer geral sobre o candidato..."
+      onblur="saveFinalComment('${escQ(key)}')">${escH(finalComment)}</textarea>
+  </div>
+  <button class="btn-save-all" style="margin-top:.75rem" onclick="saveAllComments('${escQ(key)}')">💾 Salvar comentários</button>`;
+
+  document.getElementById('cand-detail-box').innerHTML=html;
+  document.getElementById('cand-detail-overlay').classList.add('open');
+};
+
+window.setTopicGrade = async (key, secId, topicId, grade) => {
+  if(!allCandidates[key].grades) allCandidates[key].grades={};
+  if(!allCandidates[key].grades[secId]) allCandidates[key].grades[secId]={};
+  if(!allCandidates[key].grades[secId][topicId]) allCandidates[key].grades[secId][topicId]={};
+  allCandidates[key].grades[secId][topicId].grade=grade;
+  await update(ref(db,`candidates/${key}/grades/${secId}/${topicId}`),{grade});
+
+  // Update pill highlight
+  const sec=SECTIONS.find(s=>s.id===secId);
+  const t=sec?.topics.find(t=>t.id===topicId);
+  if(sec&&t){
+    const container=document.getElementById(`cmt-${secId}-${topicId}`)?.closest('.grade-topic-item');
+    if(container){
+      container.querySelectorAll('.grade-pill').forEach(p=>{
+        GRADES_LIST.forEach(g=>p.classList.remove('gp-'+gradeKey(g)));
+        if(p.textContent===grade) p.classList.add('gp-'+gradeKey(grade));
+      });
+    }
+    // Update chip
+    const chip=document.getElementById(`chip-${secId}-${topicId}`);
+    if(chip){ chip.className=`grade-chip-sm ${gcClass(grade)}`; chip.textContent=grade; }
+    // Update section avg chip
+    const c=allCandidates[key];
+    const secAvg=calcSecAvgG(c,sec);
+    const secHd=container?.closest('[style*="border:1px solid var"]')?.querySelector('.grade-chip-sm:last-child');
+    // Update overall
+    const newOverall=calcOverallG(c);
+    const ol=document.getElementById('overall-letter');
+    const od=document.getElementById('overall-desc');
+    if(ol) ol.textContent=newOverall||'—';
+    if(od) od.textContent=newOverall?descGrade(newOverall):'Nenhuma nota atribuída';
+  }
+  showToast(`Nota ${grade} salva`);
+};
+
+window.saveTopicComment = async (key, secId, topicId) => {
+  const el=document.getElementById(`cmt-${secId}-${topicId}`); if(!el) return;
+  await update(ref(db,`candidates/${key}/grades/${secId}/${topicId}`),{comment:el.value});
+};
+window.saveFinalComment = async key => {
+  const el=document.getElementById(`final-cmt-${key}`); if(!el) return;
+  await update(ref(db,`candidates/${key}/grades/final`),{comment:el.value});
+};
+window.saveAllComments = async key => {
+  for(const sec of SECTIONS){
+    for(const t of sec.topics){
+      const el=document.getElementById(`cmt-${sec.id}-${t.id}`);
+      if(el) await update(ref(db,`candidates/${key}/grades/${sec.id}/${t.id}`),{comment:el.value});
+    }
+  }
+  const fe=document.getElementById(`final-cmt-${key}`);
+  if(fe) await update(ref(db,`candidates/${key}/grades/final`),{comment:fe.value});
+  showToast('✓ Tudo salvo!');
+};
+
+// ══ CANDIDATE GRADE VIEW ══
+// We override openCand to show grades for candidates in avaliacao.html
+const _origOpenCand = window.openCand;
+window.openCand = key => {
+  const c=allCandidates[key]; if(!c) return;
+  currentKey=key;
+  document.getElementById('cand-header-name').textContent=c.name.split(' ')[0];
+  renderCandGradeView(c);
+  showScreen('screen-candidate');
+  if(unsubCand) unsubCand();
+  unsubCand=onValue(ref(db,`candidates/${key}`),snap=>{
+    const d=snap.val();
+    if(d){ allCandidates[key]=d; renderCandGradeView(d); }
+  });
+};
+
+function renderCandGradeView(c){
+  const overall=calcOverallG(c);
+  const finalComment=(c.grades&&c.grades.final&&c.grades.final.comment)||'';
+  const hasAny=SECTIONS.some(function(sec){
+    return sec.topics.some(function(t){
+      return c.grades&&c.grades[sec.id]&&c.grades[sec.id][t.id]&&c.grades[sec.id][t.id].grade;
+    });
+  });
+
+  let html='<div style="max-width:680px;margin:0 auto;padding:1.5rem;">';
+  html+='<div class="candidate-hero" style="margin-bottom:1.25rem;">';
+  html+='<h2>'+escH(c.name)+'</h2>';
+  html+='<p>Avaliação Presbiterial · Zion Church 2026</p>';
+  if(hasAny){
+    html+='<div style="display:flex;align-items:center;gap:1rem;margin-top:.5rem;">';
+    html+='<div style="font-family:Cormorant Garamond,serif;font-size:2.8rem;font-weight:700;color:var(--gold);line-height:1">'+(overall||'—')+'</div>';
+    html+='<div>';
+    html+='<div style="font-size:.72rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.07em">Média geral</div>';
+    html+='<div style="font-size:.9rem;color:rgba(255,255,255,.85)">'+(overall?descGrade(overall):'Em avaliação')+'</div>';
+    if(finalComment) html+='<div style="font-size:.8rem;color:rgba(255,255,255,.65);font-style:italic;margin-top:.3rem">“'+escH(finalComment)+'”</div>';
+    html+='</div></div>';
+  } else {
+    html+='<div style="color:rgba(255,255,255,.5);font-style:italic;font-size:.875rem">Aguardando avaliação do Escrivão</div>';
+  }
+  html+='</div>';
+
+  if(!hasAny){
+    html+='<div class="no-grade-yet">As suas notas e comentários aparecerão aqui quando o Escrivão lançar as avaliações.</div>';
+  } else {
+    SECTIONS.forEach(function(sec){
+      var secAvg=calcSecAvgG(c,sec);
+      var secHasGrade=sec.topics.some(function(t){
+        return c.grades&&c.grades[sec.id]&&c.grades[sec.id][t.id]&&c.grades[sec.id][t.id].grade;
+      });
+      if(!secHasGrade) return;
+      html+='<div class="cand-grade-section" id="cgs-'+sec.id+'">';
+      html+='<div class="cand-grade-sec-header" onclick="toggleCandSec(this)">';
+      html+='<div class="section-icon">'+sec.icon+'</div>';
+      html+='<span class="cand-grade-sec-title">'+sec.title+'</span>';
+      if(secAvg) html+='<span class="grade-chip-sm '+gcClass(secAvg)+'">'+escH(secAvg)+'</span>';
+      html+='<span class="section-chevron">▼</span>';
+      html+='</div>';
+      html+='<div class="cand-grade-sec-body">';
+      sec.topics.forEach(function(t){
+        var gd=(c.grades&&c.grades[sec.id]&&c.grades[sec.id][t.id])||{};
+        if(!gd.grade&&!gd.comment) return;
+        html+='<div class="cand-item-row">';
+        html+='<div class="cand-item-info">';
+        html+='<div class="cand-item-name">'+t.name+'</div>';
+        if(gd.comment) html+='<div class="cand-item-comment">“'+escH(gd.comment)+'”</div>';
+        html+='</div>';
+        if(gd.grade) html+='<span class="cand-item-chip '+gcClass(gd.grade)+'">'+escH(gd.grade)+'</span>';
+        html+='</div>';
+      });
+      html+='</div></div>';
+    });
+  }
+  html+='</div>';
+  document.getElementById('candidate-content').innerHTML=html;
+}
+
 </script>
 </body>
 </html>
