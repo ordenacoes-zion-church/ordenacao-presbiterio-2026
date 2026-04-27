@@ -403,9 +403,10 @@ function calcPct(c) {
   if(!c) return 0;
   let tot=0,done=0;
   SECTIONS.forEach(s=>{
-    // upload conta como 1 por seção
+    // upload conta como 1 por seção (qualquer arquivo enviado)
     tot++;
-    if(c.uploads?.[s.id]?.fileId) done++;
+    const secUps = c.uploads?.[s.id] || {};
+    if(Object.values(secUps).some(f=>f&&f.fileId)) done++;
     // cada tópico também conta
     s.topics.forEach(t=>{ tot++; if(c.topics?.[t.id]?.done) done++; });
   });
@@ -549,6 +550,31 @@ window.uploadFileToDrive = async (secId, candName, file) => {
   if(progressWrap) progressWrap.style.display='block';
   if(progressFill) progressFill.style.width='10%';
 
+  // Show popup blocker warning on first upload attempt
+  if(!sessionStorage.getItem('popup_warned')) {
+    sessionStorage.setItem('popup_warned', '1');
+    const warned = await new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;';
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:10px;padding:2rem;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+          <div style="font-size:2rem;margin-bottom:.75rem;">🔔</div>
+          <h3 style="font-family:'Cormorant Garamond',serif;color:#094d50;font-size:1.4rem;margin-bottom:.75rem;">Antes de enviar</h3>
+          <p style="font-size:.875rem;color:#6b7280;line-height:1.6;margin-bottom:1.25rem;">
+            Para enviar arquivos, o Google abrirá uma janela de autorização.<br><br>
+            <strong style="color:#1a1a1a;">Certifique-se de que o bloqueador de popups está desativado</strong> para este site antes de continuar.
+          </p>
+          <p style="font-size:.78rem;color:#9ca3af;margin-bottom:1.5rem;">No Chrome: clique no ícone 🚫 na barra de endereços → "Sempre permitir popups"</p>
+          <button id="popup-ok-btn" style="background:#0d6b6e;color:#fff;border:none;padding:.875rem 2rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:500;cursor:pointer;width:100%;">Entendido, continuar</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      document.getElementById('popup-ok-btn').onclick = () => {
+        document.body.removeChild(overlay);
+        resolve(true);
+      };
+    });
+  }
+
   try {
     // Load APIs if needed
     loadGoogleAPIs();
@@ -590,15 +616,14 @@ window.uploadFileToDrive = async (secId, candName, file) => {
     const data = await res.json();
     if(progressFill) progressFill.style.width='100%';
 
-    // Save to Firebase
-    await update(ref(db,`candidates/${currentKey}/uploads/${secId}`),{
+    // Save to Firebase with unique key per file
+    const fileKey = 'f_' + Date.now();
+    await set(ref(db,`candidates/${currentKey}/uploads/${secId}/${fileKey}`),{
       fileId: data.id,
       fileName: data.name,
       fileUrl: data.webViewLink,
       uploadedAt: new Date().toISOString()
     });
-    // Also mark section as done
-    await update(ref(db,`candidates/${currentKey}/topics`), {});
 
     setTimeout(()=>{ if(progressWrap) progressWrap.style.display='none'; }, 800);
     showToast('Arquivo enviado com sucesso!');
@@ -620,7 +645,8 @@ window.saveFallbackLink = async (secId) => {
   if(!input||!currentKey) return;
   const val = input.value.trim();
   if(!val){ showToast('Cole o link do arquivo'); return; }
-  await update(ref(db,`candidates/${currentKey}/uploads/${secId}`),{
+  const fkey = 'f_' + Date.now();
+  await set(ref(db,`candidates/${currentKey}/uploads/${secId}/${fkey}`),{
     fileId: 'link',
     fileName: 'Link externo',
     fileUrl: val,
@@ -658,44 +684,9 @@ function renderCandDash(c){
       </div>
       <div class="section-card-body">
 
-        <!-- Upload area -->
-        <div class="section-upload-area">
-          <span class="upload-label">📎 Arquivo da dissertação</span>
-          ${hasUpload ? `
-            <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:#f0fdf4;border-radius:6px;border:1px solid #bbf7d0;">
-              <span style="font-size:1.2rem">✅</span>
-              <div style="flex:1">
-                <div style="font-size:.85rem;font-weight:500;color:var(--success)">Arquivo enviado</div>
-                <div style="font-size:.75rem;color:var(--text-muted)">${escH(upload.fileName||'')}</div>
-              </div>
-              <a href="${escH(upload.fileUrl||'')}" target="_blank" class="upload-file-link">🔗 Abrir</a>
-            </div>
-            <button onclick="clearUpload('${escQ(sec.id)}')" style="margin-top:.5rem;background:none;border:none;color:var(--text-muted);font-size:.75rem;cursor:pointer;text-decoration:underline;">Substituir arquivo</button>
-          ` : `
-            <div class="upload-drop-zone" id="dropzone-${sec.id}"
-              ondragover="event.preventDefault();this.classList.add('dragover')"
-              ondragleave="this.classList.remove('dragover')"
-              ondrop="event.preventDefault();this.classList.remove('dragover');handleDrop('${escQ(sec.id)}','${escQ(c.name)}',event)">
-              <input type="file" accept=".pdf,.doc,.docx" onchange="handleFileInput('${escQ(sec.id)}','${escQ(c.name)}',this)">
-              <div class="upload-drop-icon">📄</div>
-              <div class="upload-drop-text">Arraste o arquivo ou <strong>clique para selecionar</strong></div>
-              <div class="upload-drop-text" style="margin-top:.2rem;font-size:.72rem;">PDF ou Word (.docx)</div>
-            </div>
-            <div class="upload-progress" id="upload-progress-${sec.id}">
-              <div class="upload-progress-fill" id="upload-progress-fill-${sec.id}" style="width:0%"></div>
-            </div>
-            <div class="upload-status" id="upload-status-${sec.id}"></div>
-            <!-- Fallback link input (shown if OAuth not configured) -->
-            <div id="fallback-link-${sec.id}" style="display:none;gap:.5rem;margin-top:.5rem;">
-              <input id="fallback-input-${sec.id}" type="url" placeholder="Cole o link do Google Drive..." style="flex:1;padding:.4rem .6rem;border:1px solid var(--border);border-radius:4px;font-size:.82rem;font-family:'DM Sans',sans-serif;outline:none;">
-              <button onclick="saveFallbackLink('${escQ(sec.id)}')" style="background:var(--teal);color:white;border:none;padding:.4rem .75rem;border-radius:4px;font-size:.78rem;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;">Salvar link</button>
-            </div>
-          `}
-        </div>
-
-        <!-- Topics checklist -->
+        <!-- Topics checklist FIRST -->
         <div class="topics-list">
-          <div class="topics-title">Confirmação dos itens abordados</div>
+          <div class="topics-title">Itens a serem abordados</div>
           ${sec.topics.map(t=>{
             const td=c.topics?.[t.id]||{};
             return `<div class="topic-item">
@@ -706,6 +697,45 @@ function renderCandDash(c){
               </div>
             </div>`;
           }).join('')}
+        </div>
+
+        <!-- Upload area BELOW -->
+        <div class="section-upload-area" style="border-top:1px solid var(--border);">
+          <span class="upload-label">📎 Arquivos enviados</span>
+          <div id="upload-list-${sec.id}">
+            ${(()=>{
+              const ups = c.uploads?.[sec.id] || {};
+              const files = Object.entries(ups).filter(([k,v])=>v && v.fileId);
+              if(!files.length) return '';
+              return files.map(([fkey,f])=>`
+                <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;background:#f0fdf4;border-radius:6px;border:1px solid #bbf7d0;margin-bottom:.4rem;">
+                  <span>✅</span>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:.82rem;font-weight:500;color:var(--success);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escH(f.fileName||'Arquivo')}</div>
+                    <div style="font-size:.72rem;color:var(--text-muted)">${f.uploadedAt?new Date(f.uploadedAt).toLocaleDateString('pt-BR'):''}</div>
+                  </div>
+                  <a href="${escH(f.fileUrl||'')}" target="_blank" class="upload-file-link">🔗 Abrir</a>
+                  <button onclick="removeFile('${escQ(sec.id)}','${escQ(fkey)}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;" title="Remover">✕</button>
+                </div>`).join('');
+            })()}
+          </div>
+          <div class="upload-drop-zone" id="dropzone-${sec.id}"
+            ondragover="event.preventDefault();this.classList.add('dragover')"
+            ondragleave="this.classList.remove('dragover')"
+            ondrop="event.preventDefault();this.classList.remove('dragover');handleDropMulti('${escQ(sec.id)}','${escQ(c.name)}',event)">
+            <input type="file" accept=".pdf,.doc,.docx" multiple onchange="handleFileInputMulti('${escQ(sec.id)}','${escQ(c.name)}',this)">
+            <div class="upload-drop-icon">📄</div>
+            <div class="upload-drop-text">Arraste arquivos ou <strong>clique para selecionar</strong></div>
+            <div class="upload-drop-text" style="margin-top:.2rem;font-size:.72rem;">PDF ou Word (.docx) · múltiplos arquivos permitidos</div>
+          </div>
+          <div class="upload-progress" id="upload-progress-${sec.id}">
+            <div class="upload-progress-fill" id="upload-progress-fill-${sec.id}" style="width:0%"></div>
+          </div>
+          <div class="upload-status" id="upload-status-${sec.id}"></div>
+          <div id="fallback-link-${sec.id}" style="display:none;gap:.5rem;margin-top:.5rem;">
+            <input id="fallback-input-${sec.id}" type="url" placeholder="Cole o link do Google Drive..." style="flex:1;padding:.4rem .6rem;border:1px solid var(--border);border-radius:4px;font-size:.82rem;font-family:'DM Sans',sans-serif;outline:none;">
+            <button onclick="saveFallbackLink('${escQ(sec.id)}')" style="background:var(--teal);color:white;border:none;padding:.4rem .75rem;border-radius:4px;font-size:.78rem;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;">Salvar link</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -743,18 +773,19 @@ function renderCandDash(c){
   document.getElementById('candidate-content').innerHTML=html;
 }
 
-window.handleDrop = (secId, candName, event) => {
-  const file = event.dataTransfer.files[0];
-  if(file) uploadFileToDrive(secId, candName, file);
+window.handleDropMulti = (secId, candName, event) => {
+  const files = Array.from(event.dataTransfer.files);
+  files.forEach(f => uploadFileToDrive(secId, candName, f));
 };
-window.handleFileInput = (secId, candName, input) => {
-  const file = input.files[0];
-  if(file) uploadFileToDrive(secId, candName, file);
+window.handleFileInputMulti = (secId, candName, input) => {
+  const files = Array.from(input.files);
+  files.forEach(f => uploadFileToDrive(secId, candName, f));
+  input.value = '';
 };
-window.clearUpload = async secId => {
+window.removeFile = async (secId, fileKey) => {
   if(!currentKey) return;
-  if(!confirm('Remover o arquivo enviado?')) return;
-  await set(ref(db,`candidates/${currentKey}/uploads/${secId}`),null);
+  if(!confirm('Remover este arquivo?')) return;
+  await set(ref(db,`candidates/${currentKey}/uploads/${secId}/${fileKey}`), null);
   showToast('Arquivo removido');
 };
 
@@ -802,9 +833,18 @@ window.openCandDetail = key => {
     return `<div class="detail-section">
       <div class="detail-section-header">
         <span class="detail-section-title">${sec.icon} ${sec.title}</span>
-        <span class="section-badge ${upload?.fileId?(done===sec.topics.length?'badge-done':'badge-partial'):'badge-pending'}">${upload?.fileId?'Arquivo enviado':'Sem arquivo'} · ${done}/${sec.topics.length}</span>
+        ${(()=>{
+          const ups2 = c.uploads?.[sec.id] || {};
+          const nFiles = Object.values(ups2).filter(f=>f&&f.fileId).length;
+          const bc2 = nFiles>0?(done===sec.topics.length?'badge-done':'badge-partial'):'badge-pending';
+          return `<span class="section-badge ${bc2}">${nFiles>0?nFiles+' arquivo(s)':'Sem arquivo'} · ${done}/${sec.topics.length}</span>`;
+        })()}
       </div>
-      ${upload?.fileId?`<div class="detail-topic-row"><span style="font-size:.85rem">📎</span><div class="detail-topic-name">${escH(upload.fileName||'Arquivo')}</div><a class="detail-topic-link" href="${escH(upload.fileUrl||'')}" target="_blank">Abrir no Drive</a></div>`:''}
+      ${(()=>{
+        const ups = c.uploads?.[sec.id] || {};
+        const files = Object.values(ups).filter(f=>f&&f.fileId);
+        return files.map(f=>`<div class="detail-topic-row"><span style="font-size:.85rem">📎</span><div class="detail-topic-name">${escH(f.fileName||'Arquivo')}</div><a class="detail-topic-link" href="${escH(f.fileUrl||'')}" target="_blank">Abrir no Drive</a></div>`).join('');
+      })()}
       ${sec.topics.map(t=>{const td=c.topics?.[t.id]||{};return `<div class="detail-topic-row">
         <div class="detail-topic-status ${td.done?'done':'pending'}">${td.done?'✓':'○'}</div>
         <div class="detail-topic-name">${t.name}</div>
