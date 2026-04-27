@@ -616,11 +616,16 @@ window.uploadFileToDrive = async (secId, candName, file) => {
     const data = await res.json();
     if(progressFill) progressFill.style.width='100%';
 
-    // Save to Firebase with unique key per file
+    // Save to Firebase with unique key per file, numbered name
+    const existingUps = allCandidates[currentKey]?.uploads?.[secId] || {};
+    const fileCount = Object.values(existingUps).filter(f=>f&&f.fileId).length + 1;
+    const ext = data.name.match(/\.[^.]+$/)?.[0] || '';
+    const baseName = data.name.replace(/\.[^.]+$/, '').replace(/ — .*$/, '');
+    const numberedName = fileCount > 1 ? `${baseName} (${fileCount})${ext}` : data.name;
     const fileKey = 'f_' + Date.now();
     await set(ref(db,`candidates/${currentKey}/uploads/${secId}/${fileKey}`),{
       fileId: data.id,
-      fileName: data.name,
+      fileName: numberedName,
       fileUrl: data.webViewLink,
       uploadedAt: new Date().toISOString()
     });
