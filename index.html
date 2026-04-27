@@ -608,37 +608,12 @@ window.uploadFileToDrive = async (secId, candName, file) => {
     const fileName = `${candName} — ${secLabel}${file.name.match(/\.[^.]+$/)?.[0]||'.pdf'}`;
 
     // Upload via multipart
-    if(progressFill) progressFill.style.width='40%';
-    if(statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted)">Criando pasta do candidato...</span>';
-
-    // Find or create candidate subfolder inside DRIVE_FOLDER_ID
-    let candFolderId = null;
-
-    // Search for existing folder with candidate name
-    const searchRes = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(candName)}' and mimeType='application/vnd.google-apps.folder' and '${DRIVE_FOLDER_ID}' in parents and trashed=false&fields=files(id,name)`,
-      { headers:{ Authorization:`Bearer ${token}` } }
-    );
-    const searchData = await searchRes.json();
-
-    if(searchData.files && searchData.files.length > 0) {
-      candFolderId = searchData.files[0].id;
-    } else {
-      // Create the folder
-      const folderRes = await fetch('https://www.googleapis.com/drive/v3/files?fields=id', {
-        method: 'POST',
-        headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' },
-        body: JSON.stringify({ name: candName, mimeType: 'application/vnd.google-apps.folder', parents: [DRIVE_FOLDER_ID] })
-      });
-      const folderData = await folderRes.json();
-      candFolderId = folderData.id;
-    }
-
-    if(progressFill) progressFill.style.width='60%';
+    if(progressFill) progressFill.style.width='50%';
     if(statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted)">Enviando arquivo...</span>';
 
-    // Upload file to candidate folder, keeping original name
-    const metadata = { name: file.name, parents: [candFolderId] };
+    // Upload file to main folder with candidate name prefix
+    const prefixedName = `${candName} — ${file.name}`;
+    const metadata = { name: prefixedName, parents: [DRIVE_FOLDER_ID] };
     const form = new FormData();
     form.append('metadata', new Blob([JSON.stringify(metadata)],{type:'application/json'}));
     form.append('file', file);
@@ -658,7 +633,7 @@ window.uploadFileToDrive = async (secId, candName, file) => {
     const fileKey = 'f_' + Date.now();
     await set(ref(db,`candidates/${currentKey}/uploads/${secId}/${fileKey}`),{
       fileId: data.id,
-      fileName: file.name,
+      fileName: prefixedName,
       fileUrl: data.webViewLink,
       uploadedAt: new Date().toISOString()
     });
