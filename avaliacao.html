@@ -242,6 +242,41 @@
   .btn-save-grades{background:var(--gold);color:var(--teal-dark);border:none;padding:.65rem 1.5rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:.75rem;}
   .btn-save-grades:hover{background:#e0ba5c;}
   .cand-row-avg{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--teal-dark);white-space:nowrap;flex-shrink:0;min-width:2.5rem;text-align:right;}
+
+  /* ── CANDIDATE GRADE VIEW ── */
+  .cand-grade-hero{background:linear-gradient(135deg,var(--teal-dark),var(--teal));border-radius:10px;padding:1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+  .cand-grade-hero::after{content:'✝';position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);font-size:4rem;color:rgba(255,255,255,.06);font-family:serif;}
+  .cand-grade-hero h2{font-family:'Cormorant Garamond',serif;color:var(--white);font-size:1.6rem;margin-bottom:.25rem;}
+  .cand-grade-hero p{color:rgba(255,255,255,.6);font-size:.85rem;margin-bottom:1.25rem;}
+  .overall-avg-row{display:flex;align-items:center;gap:1rem;}
+  .overall-avg-letter{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:700;color:var(--gold);line-height:1;}
+  .overall-avg-info{flex:1;}
+  .overall-avg-label{font-size:.72rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.07em;}
+  .overall-avg-desc{font-size:.9rem;color:rgba(255,255,255,.85);margin-top:.15rem;}
+  .overall-avg-comment{font-size:.82rem;color:rgba(255,255,255,.65);margin-top:.4rem;font-style:italic;}
+  .grade-view-card{background:var(--white);border:1px solid var(--border);border-radius:8px;margin-bottom:1rem;overflow:hidden;}
+  .grade-view-header{padding:1rem 1.25rem;display:flex;align-items:center;gap:.75rem;cursor:pointer;user-select:none;}
+  .grade-view-header:hover{background:var(--teal-light);}
+  .grade-view-icon{width:36px;height:36px;background:var(--teal-light);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+  .grade-view-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;color:var(--teal-dark);flex:1;}
+  .grade-view-avg{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;padding:.1rem .5rem;border-radius:4px;}
+  .grade-view-chevron{color:var(--text-muted);font-size:.85rem;margin-left:.3rem;transition:transform .2s;}
+  .grade-view-card.open .grade-view-chevron{transform:rotate(180deg);}
+  .grade-view-body{display:none;border-top:1px solid var(--border);padding:1rem 1.25rem;}
+  .grade-view-card.open .grade-view-body{display:block;}
+  .grade-item-row{display:flex;align-items:flex-start;gap:.75rem;padding:.65rem 0;border-bottom:1px solid var(--border);}
+  .grade-item-row:last-child{border-bottom:none;}
+  .grade-item-info{flex:1;}
+  .grade-item-name{font-size:.88rem;font-weight:500;color:var(--text);}
+  .grade-item-comment{font-size:.78rem;color:var(--text-muted);margin-top:.25rem;font-style:italic;line-height:1.4;}
+  .grade-item-chip{font-size:.8rem;padding:.2rem .55rem;border-radius:4px;font-weight:700;white-space:nowrap;flex-shrink:0;}
+  .gic-A{background:#dcfce7;color:#15803d;}
+  .gic-B{background:#dbeafe;color:#1d4ed8;}
+  .gic-C{background:#fef9c3;color:#a16207;}
+  .gic-D{background:#ffedd5;color:#c2410c;}
+  .gic-F{background:#fee2e2;color:#dc2626;}
+  .gic-none{background:#f3f4f6;color:#9ca3af;}
+  .no-grades-msg{text-align:center;padding:2rem;color:var(--text-muted);font-size:.9rem;}
 </style>
 </head>
 <body>
@@ -255,11 +290,11 @@
 <!-- LANDING -->
 <div id="screen-landing" class="screen">
   <div class="landing-cross">✝</div>
-  <h1 class="landing-title">Ordenação ao<br>Presbitério</h1>
+  <h1 class="landing-title">Avaliação<br>Presbiterial</h1>
   <p class="landing-sub">Zion Church · Junho 2026</p>
   <p class="landing-verse">"Se alguém aspira ao episcopado, excelente obra almeja." — 1 Tm 3.1</p>
   <div class="landing-buttons">
-    <button class="btn-primary" onclick="showScreen('screen-select-candidate')">Sou Candidato</button>
+    <button class="btn-primary" onclick="showScreen('screen-select-candidate')">Ver minhas notas</button>
     <button class="btn-outline" onclick="showScreen('screen-coord-login')">Acesso Restrito</button>
   </div>
 </div>
@@ -514,21 +549,80 @@ window.openCand = key => {
   const c=allCandidates[key]; if(!c) return;
   currentKey=key;
   document.getElementById('cand-header-name').textContent=c.name.split(' ')[0];
-  renderCandDash(c);
+  renderCandGrades(c);
   showScreen('screen-candidate');
   if(unsubCand) unsubCand();
   unsubCand=onValue(ref(db,`candidates/${key}`),snap=>{
-    const d=snap.val(); 
-    if(d){
-      allCandidates[key]=d;
-      // Remember which sections are open
-      const openSecs = Array.from(document.querySelectorAll('.section-card.open')).map(el=>el.id);
-      renderCandDash(d);
-      // Restore open sections
-      openSecs.forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add('open'); });
-    }
+    const d=snap.val();
+    if(d){ allCandidates[key]=d; renderCandGrades(d); }
   });
 };
+
+function gicClass(g){
+  if(!g) return 'gic-none';
+  if(g.startsWith('A')) return 'gic-A';
+  if(g.startsWith('B')) return 'gic-B';
+  if(g.startsWith('C')) return 'gic-C';
+  if(g.startsWith('D')) return 'gic-D';
+  return 'gic-F';
+}
+
+function renderCandGrades(c){
+  const overall = calcOverallAvg(c.grades);
+  const finalComment = c.grades?.final?.comment || '';
+  const hasAny = SECTIONS.some(sec=>sec.topics.some(t=>c.grades?.[sec.id]?.[t.id]?.grade));
+
+  let html = `<div style="max-width:680px;margin:0 auto;padding:1.5rem;">
+    <div class="cand-grade-hero">
+      <h2>${escH(c.name)}</h2>
+      <p>Avaliação Presbiterial · Zion Church 2026</p>
+      ${hasAny ? `<div class="overall-avg-row">
+        <div class="overall-avg-letter">${overall||'—'}</div>
+        <div class="overall-avg-info">
+          <div class="overall-avg-label">Média geral</div>
+          <div class="overall-avg-desc">${overall?descGradeC(overall):'Em avaliação'}</div>
+          ${finalComment?`<div class="overall-avg-comment">"${escH(finalComment)}"</div>`:''}
+        </div>
+      </div>` : `<p style="color:rgba(255,255,255,.5);font-style:italic">Aguardando avaliação do Escrivão</p>`}
+    </div>`;
+
+  if(!hasAny){
+    html += `<div class="no-grades-msg">📋 Suas avaliações aparecerão aqui quando o Escrivão lançar as notas.</div>`;
+  } else {
+    SECTIONS.forEach(sec=>{
+      const secAvg = calcSecAvg(c, sec);
+      const secHasGrade = sec.topics.some(t=>c.grades?.[sec.id]?.[t.id]?.grade);
+      if(!secHasGrade) return;
+
+      html += `<div class="grade-view-card" id="gv-${sec.id}">
+        <div class="grade-view-header" onclick="toggleGradeView('gv-${sec.id}')">
+          <div class="grade-view-icon">${sec.icon}</div>
+          <div class="grade-view-title">${sec.title}</div>
+          ${secAvg?`<span class="grade-view-avg ${gicClass(secAvg)}">${escH(secAvg)}</span>`:''}
+          <span class="grade-view-chevron">▼</span>
+        </div>
+        <div class="grade-view-body">
+          ${sec.topics.map(t=>{
+            const td=c.grades?.[sec.id]?.[t.id]||{};
+            if(!td.grade && !td.comment) return '';
+            return `<div class="grade-item-row">
+              <div class="grade-item-info">
+                <div class="grade-item-name">${t.name}</div>
+                ${td.comment?`<div class="grade-item-comment">"${escH(td.comment)}"</div>`:''}
+              </div>
+              ${td.grade?`<span class="grade-item-chip ${gicClass(td.grade)}">${escH(td.grade)}</span>`:''}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    });
+  }
+
+  html += '</div>';
+  document.getElementById('candidate-content').innerHTML = html;
+}
+
+window.toggleGradeView = id => document.getElementById(id).classList.toggle('open');
 
 // ── Google Drive Upload (via picker + user's own auth) ──
 // Since direct service account from browser is not feasible without a backend,
@@ -779,8 +873,18 @@ function pointsToGrade(p){
   if(p>=1.15)return 'D+';if(p>=0.85)return 'D';if(p>=0.5)return 'D-';
   return 'F';
 }
+function calcSecAvg(c, sec){
+  const gs=sec.topics.map(t=>c.grades?.[sec.id]?.[t.id]?.grade).filter(Boolean);
+  if(!gs.length)return null;
+  const avg=gs.map(g=>GRADE_POINTS[g]||0).reduce((a,b)=>a+b,0)/gs.length;
+  return pointsToGrade(avg);
+}
 function calcAvg(c){
-  const gs=SECTIONS.map(s=>c.grades?.[s.id]?.grade).filter(Boolean);
+  const gs=[];
+  SECTIONS.forEach(sec=>sec.topics.forEach(t=>{
+    const g=c.grades?.[sec.id]?.[t.id]?.grade;
+    if(g) gs.push(g);
+  }));
   if(!gs.length)return null;
   const avg=gs.map(g=>GRADE_POINTS[g]||0).reduce((a,b)=>a+b,0)/gs.length;
   return pointsToGrade(avg);
@@ -796,8 +900,8 @@ function renderGradesList(){
   document.getElementById('grades-list').innerHTML=keys.map(k=>{
     const c=allCandidates[k],avg=calcAvg(c);
     const chips=SECTIONS.map(s=>{
-      const g=c.grades?.[s.id]?.grade;
-      return g?`<span class="grade-chip gc-${GRADE_KEY(g)}">${escH(g)}</span>`:'';
+      const avg=calcSecAvg(c,s);
+      return avg?`<span class="grade-chip gc-${GRADE_KEY(avg)}" title="${escH(s.title)}">${escH(avg)}</span>`:'';
     }).filter(Boolean).join(' ');
     return `<div class="candidate-row" onclick="openGradeDetail('${escQ(k)}')">
       <div class="cand-avatar">${ini(c.name)}</div>
@@ -812,90 +916,116 @@ function renderGradesList(){
 
 window.openGradeDetail = key => {
   const c=allCandidates[key]; if(!c) return;
-  const avg=calcAvg(c);
 
   let html=`<button class="cand-detail-close" onclick="closeCandDetail()">✕</button>
     <div class="cand-detail-name">${escH(c.name)}</div>
-    <div class="cand-detail-pct" style="margin-bottom:1.25rem">Avaliação das dissertações</div>`;
+    <div class="cand-detail-pct" style="margin-bottom:1.25rem">Avaliação por item · Zion Church 2026</div>`;
 
   SECTIONS.forEach(sec=>{
-    const gd=c.grades?.[sec.id]||{};
-    const selG=gd.grade||'';
-    const pills=GRADES.map(g=>{
-      const k=GRADE_KEY(g);
-      const sel=selG===g?`sel-${k}`:'';
-      return `<button class="grade-pill ${sel}" onclick="selectGrade('${escQ(key)}','${escQ(sec.id)}','${g}','${escQ(key)}')">${g}</button>`;
-    }).join('');
-
+    const secAvgGrade = calcSecAvg(c, sec);
     html+=`<div class="grade-section-wrap">
       <div class="grade-section-hd">
         <span>${sec.icon}</span>
         <span class="grade-section-hd-title">${sec.title}</span>
-        ${selG?`<span class="grade-chip gc-${GRADE_KEY(selG)}">${escH(selG)}</span>`:''}
+        ${secAvgGrade?`<span class="grade-chip gc-${GRADE_KEY(secAvgGrade)}" title="Média da seção">${escH(secAvgGrade)}</span>`:''}
       </div>
       <div class="grade-section-bd">
-        <span class="grade-sub-label">Nota</span>
-        <div class="grade-pills">${pills}</div>
-        <span class="grade-sub-label">Comentários</span>
-        <textarea class="grade-comment" id="gc-${escQ(sec.id)}" placeholder="Observações sobre esta seção..." onblur="saveGradeComment('${escQ(key)}','${escQ(sec.id)}')">${escH(gd.comment||'')}</textarea>
+        ${sec.topics.map(t=>{
+          const td=c.grades?.[sec.id]?.[t.id]||{};
+          const selG=td.grade||'';
+          const pills=GRADES.map(g=>{
+            const k=GRADE_KEY(g);
+            const sel=selG===g?`sel-${k}`:'';
+            return `<button class="grade-pill ${sel}" onclick="selectTopicGrade('${escQ(key)}','${escQ(sec.id)}','${escQ(t.id)}','${g}')">${g}</button>`;
+          }).join('');
+          return `<div style="padding:.75rem 0;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
+              <span style="font-size:.85rem;font-weight:500;color:var(--text);flex:1">${t.name}</span>
+              ${selG?`<span class="grade-chip gc-${GRADE_KEY(selG)}">${escH(selG)}</span>`:''}
+            </div>
+            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem">${t.desc}</div>
+            <div class="grade-pills">${pills}</div>
+            <textarea class="grade-comment" id="gc-${escQ(sec.id)}-${escQ(t.id)}"
+              placeholder="Comentário sobre este item..."
+              onblur="saveTopicComment('${escQ(key)}','${escQ(sec.id)}','${escQ(t.id)}')">${escH(td.comment||'')}</textarea>
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
   });
 
   // Final average
+  const avg=calcAvg(c);
   const finalComment=c.grades?.final?.comment||'';
   html+=`<div class="final-avg-box">
     <div class="final-avg-letter">${avg||'—'}</div>
     <div class="final-avg-info">
-      <div class="final-avg-label">Média geral</div>
+      <div class="final-avg-label">Média geral de todos os itens</div>
       <div class="final-avg-desc">${avg?descGrade(avg):'Nenhuma nota atribuída ainda'}</div>
     </div>
   </div>
   <div style="margin-top:.75rem">
     <span class="grade-sub-label">Parecer final do Escrivão</span>
-    <textarea class="grade-comment" id="gc-final" placeholder="Parecer geral sobre o candidato..." onblur="saveFinalComment('${escQ(key)}')">${escH(finalComment)}</textarea>
+    <textarea class="grade-comment" id="gc-final" placeholder="Parecer geral sobre o candidato..."
+      onblur="saveFinalComment('${escQ(key)}')">${escH(finalComment)}</textarea>
   </div>
-  <button class="btn-save-grades" onclick="saveAllGrades('${escQ(key)}')">💾 Salvar tudo</button>`;
+  <button class="btn-save-grades" onclick="saveAllGrades('${escQ(key)}')">💾 Salvar comentários</button>`;
 
   document.getElementById('cand-detail-box').innerHTML=html;
   document.getElementById('cand-detail-overlay').classList.add('open');
 };
 
-window.selectGrade = async (key, secId, grade) => {
-  await update(ref(db,`candidates/${key}/grades/${secId}`),{grade});
-  // update pill UI
-  const pills=document.querySelectorAll(`[onclick*="'${secId}'"]`);
-  pills.forEach(p=>{
-    GRADES.forEach(g=>p.classList.remove(`sel-${GRADE_KEY(g)}`));
-    if(p.textContent===grade) p.classList.add(`sel-${GRADE_KEY(grade)}`);
-  });
-  // update chip in header
-  const wrap=document.querySelector(`[id="gc-${secId}"]`)?.closest('.grade-section-wrap');
-  if(wrap){
-    const hd=wrap.querySelector('.grade-section-hd');
-    let chip=hd.querySelector('.grade-chip');
-    if(!chip){chip=document.createElement('span');chip.className='grade-chip';hd.appendChild(chip);}
+window.selectTopicGrade = async (key, secId, topicId, grade) => {
+  if(!allCandidates[key].grades) allCandidates[key].grades={};
+  if(!allCandidates[key].grades[secId]) allCandidates[key].grades[secId]={};
+  if(!allCandidates[key].grades[secId][topicId]) allCandidates[key].grades[secId][topicId]={};
+  allCandidates[key].grades[secId][topicId].grade = grade;
+
+  await update(ref(db,`candidates/${key}/grades/${secId}/${topicId}`),{grade});
+
+  // Update pill UI
+  const container = document.getElementById(`gc-${secId}-${topicId}`)?.closest('div[style]');
+  if(container){
+    container.querySelectorAll('.grade-pill').forEach(p=>{
+      GRADES.forEach(g=>p.classList.remove(`sel-${GRADE_KEY(g)}`));
+      if(p.textContent===grade) p.classList.add(`sel-${GRADE_KEY(grade)}`);
+    });
+    // update chip
+    let chip = container.querySelector('.grade-chip');
+    if(!chip){ chip=document.createElement('span'); chip.className='grade-chip'; container.querySelector('div').appendChild(chip); }
     chip.className=`grade-chip gc-${GRADE_KEY(grade)}`;
     chip.textContent=grade;
   }
-  // update avg
+
+  // Recalc section average
   const c=allCandidates[key];
-  if(c){
-    if(!c.grades)c.grades={};
-    if(!c.grades[secId])c.grades[secId]={};
-    c.grades[secId].grade=grade;
-    const newAvg=calcAvg(c);
-    const letter=document.querySelector('.final-avg-letter');
-    const desc=document.querySelector('.final-avg-desc');
-    if(letter)letter.textContent=newAvg||'—';
-    if(desc)desc.textContent=newAvg?descGrade(newAvg):'Nenhuma nota atribuída ainda';
+  const sec=SECTIONS.find(s=>s.id===secId);
+  if(sec){
+    const secAvg=calcSecAvg(c,sec);
+    const hd=document.querySelector(`[onclick*="'${secId}'"]`)?.closest('.grade-section-wrap')?.querySelector('.grade-section-hd');
+    if(hd){
+      let chip=hd.querySelector('.grade-chip');
+      if(secAvg){
+        if(!chip){chip=document.createElement('span');chip.className='grade-chip';hd.appendChild(chip);}
+        chip.className=`grade-chip gc-${GRADE_KEY(secAvg)}`;
+        chip.textContent=secAvg;
+      } else if(chip){ chip.remove(); }
+    }
   }
+
+  // Recalc overall average
+  const newAvg=calcAvg(c);
+  const letter=document.querySelector('.final-avg-letter');
+  const desc=document.querySelector('.final-avg-desc');
+  if(letter) letter.textContent=newAvg||'—';
+  if(desc) desc.textContent=newAvg?descGrade(newAvg):'Nenhuma nota atribuída ainda';
+
   showToast(`Nota ${grade} salva`);
 };
 
-window.saveGradeComment = async (key, secId) => {
-  const el=document.getElementById(`gc-${secId}`); if(!el) return;
-  await update(ref(db,`candidates/${key}/grades/${secId}`),{comment:el.value});
+window.saveTopicComment = async (key, secId, topicId) => {
+  const el=document.getElementById(`gc-${secId}-${topicId}`); if(!el) return;
+  await update(ref(db,`candidates/${key}/grades/${secId}/${topicId}`),{comment:el.value});
 };
 window.saveFinalComment = async key => {
   const el=document.getElementById('gc-final'); if(!el) return;
@@ -903,12 +1033,14 @@ window.saveFinalComment = async key => {
 };
 window.saveAllGrades = async key => {
   for(const sec of SECTIONS){
-    const el=document.getElementById(`gc-${sec.id}`);
-    if(el) await update(ref(db,`candidates/${key}/grades/${sec.id}`),{comment:el.value});
+    for(const t of sec.topics){
+      const el=document.getElementById(`gc-${sec.id}-${t.id}`);
+      if(el) await update(ref(db,`candidates/${key}/grades/${sec.id}/${t.id}`),{comment:el.value});
+    }
   }
   const fe=document.getElementById('gc-final');
   if(fe) await update(ref(db,`candidates/${key}/grades/final`),{comment:fe.value});
-  showToast('✓ Tudo salvo!');
+  showToast('✓ Comentários salvos!');
 };
 
 window.closeCandDetail = () => document.getElementById('cand-detail-overlay').classList.remove('open');
