@@ -484,7 +484,17 @@ window.openCand = key => {
   renderCandDash(c);
   showScreen('screen-candidate');
   if(unsubCand) unsubCand();
-  unsubCand=onValue(ref(db,`candidates/${key}`),snap=>{ const d=snap.val(); if(d){allCandidates[key]=d;renderCandDash(d);} });
+  unsubCand=onValue(ref(db,`candidates/${key}`),snap=>{
+    const d=snap.val(); 
+    if(d){
+      allCandidates[key]=d;
+      // Remember which sections are open
+      const openSecs = Array.from(document.querySelectorAll('.section-card.open')).map(el=>el.id);
+      renderCandDash(d);
+      // Restore open sections
+      openSecs.forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add('open'); });
+    }
+  });
 };
 
 // ── Google Drive Upload (via picker + user's own auth) ──
@@ -598,12 +608,40 @@ window.uploadFileToDrive = async (secId, candName, file) => {
     const fileName = `${candName} — ${secLabel}${file.name.match(/\.[^.]+$/)?.[0]||'.pdf'}`;
 
     // Upload via multipart
-    const metadata = { name: fileName, parents: [DRIVE_FOLDER_ID] };
+    if(progressFill) progressFill.style.width='40%';
+    if(statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted)">Criando pasta do candidato...</span>';
+
+    // Find or create candidate subfolder inside DRIVE_FOLDER_ID
+    let candFolderId = null;
+
+    // Search for existing folder with candidate name
+    const searchRes = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(candName)}' and mimeType='application/vnd.google-apps.folder' and '${DRIVE_FOLDER_ID}' in parents and trashed=false&fields=files(id,name)`,
+      { headers:{ Authorization:`Bearer ${token}` } }
+    );
+    const searchData = await searchRes.json();
+
+    if(searchData.files && searchData.files.length > 0) {
+      candFolderId = searchData.files[0].id;
+    } else {
+      // Create the folder
+      const folderRes = await fetch('https://www.googleapis.com/drive/v3/files?fields=id', {
+        method: 'POST',
+        headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' },
+        body: JSON.stringify({ name: candName, mimeType: 'application/vnd.google-apps.folder', parents: [DRIVE_FOLDER_ID] })
+      });
+      const folderData = await folderRes.json();
+      candFolderId = folderData.id;
+    }
+
+    if(progressFill) progressFill.style.width='60%';
+    if(statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted)">Enviando arquivo...</span>';
+
+    // Upload file to candidate folder, keeping original name
+    const metadata = { name: file.name, parents: [candFolderId] };
     const form = new FormData();
     form.append('metadata', new Blob([JSON.stringify(metadata)],{type:'application/json'}));
     form.append('file', file);
-
-    if(progressFill) progressFill.style.width='60%';
 
     const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
       method:'POST',
@@ -616,16 +654,11 @@ window.uploadFileToDrive = async (secId, candName, file) => {
     const data = await res.json();
     if(progressFill) progressFill.style.width='100%';
 
-    // Save to Firebase with unique key per file, numbered name
-    const existingUps = allCandidates[currentKey]?.uploads?.[secId] || {};
-    const fileCount = Object.values(existingUps).filter(f=>f&&f.fileId).length + 1;
-    const ext = data.name.match(/\.[^.]+$/)?.[0] || '';
-    const baseName = data.name.replace(/\.[^.]+$/, '').replace(/ — .*$/, '');
-    const numberedName = fileCount > 1 ? `${baseName} (${fileCount})${ext}` : data.name;
+    // Save to Firebase keeping original filename
     const fileKey = 'f_' + Date.now();
     await set(ref(db,`candidates/${currentKey}/uploads/${secId}/${fileKey}`),{
       fileId: data.id,
-      fileName: numberedName,
+      fileName: file.name,
       fileUrl: data.webViewLink,
       uploadedAt: new Date().toISOString()
     });
@@ -799,7 +832,36 @@ window.toggleTopic = async topicId => {
   if(!currentKey) return;
   const c=allCandidates[currentKey];
   const cur=c.topics?.[topicId]?.done;
-  await update(ref(db,`candidates/${currentKey}/topics/${topicId}`),{done:!cur});
+  const newVal = !cur;
+  await update(ref(db,`candidates/${currentKey}/topics/${topicId}`),{done:newVal});
+  // Update only the checkbox and progress bar — don't re-render the whole page
+  const checkEl = document.querySelector(`[onclick="toggleTopic('${topicId}')"]`);
+  if(checkEl){ checkEl.classList.toggle('checked', newVal); }
+  // Refresh progress bar only
+  const snap = await get(ref(db,`candidates/${currentKey}`));
+  const updated = snap.val();
+  if(updated){
+    allCandidates[currentKey] = updated;
+    const pct = calcPct(updated);
+    const bar = document.querySelector('.progress-bar-fill');
+    const label = document.querySelector('.progress-label strong');
+    if(bar) bar.style.width = pct + '%';
+    if(label) label.textContent = pct + '%';
+    // Update section badge
+    const sec = SECTIONS.find(s=>s.topics.some(t=>t.id===topicId));
+    if(sec){
+      const done = secDone(updated, sec);
+      const total = sec.topics.length;
+      const card = document.getElementById('sec-'+sec.id);
+      if(card){
+        const badge = card.querySelector('.section-badge');
+        if(badge){
+          badge.className = 'section-badge ' + (done===total?'badge-done':done>0?'badge-partial':'badge-pending');
+          badge.textContent = done===total ? '✓ Completo' : done + '/' + total + (updated.uploads?.[sec.id]?' · Arquivo enviado':'');
+        }
+      }
+    }
+  }
   showToast('Salvo!');
 };
 
