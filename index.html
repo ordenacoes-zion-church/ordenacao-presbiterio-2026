@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ordenação ao Presbitério — Zion Church</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #0d6b6e; --teal-dark: #094d50; --teal-light: #e8f4f4; --teal-mid: #1a8a8e;
+    --gold: #c9a84c; --gold-light: #f5edd6;
+    --text: #1a1a1a; --text-muted: #6b7280; --border: #d1e8e8; --bg: #f7fafa; --white: #ffffff;
+    --danger: #c0392b; --success: #1a7a4a; --warning: #b8860b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  h1,h2,h3,h4 { font-family: 'Cormorant Garamond', serif; }
+  .screen { display: none; } .screen.active { display: block; }
+
+  /* LOADING */
+  #screen-loading { min-height:100vh; background:var(--teal-dark); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.5rem; }
+  .spinner { width:40px; height:40px; border:3px solid rgba(255,255,255,0.2); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-text { color:rgba(255,255,255,0.6); font-size:0.9rem; }
+
+  /* LANDING */
+  #screen-landing { min-height:100vh; background:var(--teal-dark); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem; position:relative; overflow:hidden; }
+  #screen-landing::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 20% 50%,rgba(201,168,76,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(13,107,110,.3) 0%,transparent 50%); pointer-events:none; }
+  .landing-cross { font-size:2rem; color:var(--gold); margin-bottom:1.5rem; opacity:.8; animation:fadeDown .8s ease forwards; }
+  .landing-title { font-family:'Cormorant Garamond',serif; font-size:clamp(2.2rem,6vw,3.5rem); color:var(--white); font-weight:700; text-align:center; line-height:1.15; margin-bottom:.5rem; animation:fadeDown .8s ease .1s forwards; opacity:0; }
+  .landing-sub { font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--gold); text-align:center; letter-spacing:.15em; text-transform:uppercase; margin-bottom:3rem; animation:fadeDown .8s ease .2s forwards; opacity:0; }
+  .landing-verse { font-family:'Cormorant Garamond',serif; font-style:italic; color:rgba(255,255,255,.5); font-size:.95rem; text-align:center; margin-bottom:3rem; max-width:340px; animation:fadeDown .8s ease .3s forwards; opacity:0; }
+  .landing-buttons { display:flex; flex-direction:column; gap:1rem; width:100%; max-width:320px; animation:fadeDown .8s ease .4s forwards; opacity:0; }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+  .btn-primary { background:var(--gold); color:var(--teal-dark); border:none; padding:1rem 2rem; font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:500; border-radius:4px; cursor:pointer; transition:all .2s; }
+  .btn-primary:hover { background:#e0ba5c; transform:translateY(-1px); }
+  .btn-outline { background:transparent; color:var(--white); border:1px solid rgba(255,255,255,.3); padding:1rem 2rem; font-family:'DM Sans',sans-serif; font-size:.95rem; border-radius:4px; cursor:pointer; transition:all .2s; }
+  .btn-outline:hover { border-color:rgba(255,255,255,.6); background:rgba(255,255,255,.05); }
+
+  /* LOGIN */
+  #screen-coord-login { min-height:100vh; background:var(--teal-dark); display:flex; align-items:center; justify-content:center; padding:2rem; }
+  .login-box { background:var(--white); border-radius:8px; padding:2.5rem; width:100%; max-width:360px; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+  .login-box h2 { font-size:1.8rem; color:var(--teal-dark); margin-bottom:.3rem; }
+  .login-box p { color:var(--text-muted); font-size:.875rem; margin-bottom:2rem; }
+  .field { margin-bottom:1.25rem; }
+  .field label { display:block; font-size:.8rem; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.4rem; }
+  .field input,.field select,.field textarea { width:100%; padding:.75rem 1rem; border:1px solid var(--border); border-radius:4px; font-family:'DM Sans',sans-serif; font-size:.95rem; color:var(--text); background:var(--white); outline:none; transition:border-color .2s; }
+  .field input:focus,.field select:focus,.field textarea:focus { border-color:var(--teal); }
+  .error-msg { color:var(--danger); font-size:.82rem; margin-top:.5rem; display:none; }
+  .btn-full { width:100%; background:var(--teal); color:var(--white); border:none; padding:.875rem; border-radius:4px; font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:500; cursor:pointer; transition:background .2s; margin-top:.5rem; }
+  .btn-full:hover { background:var(--teal-mid); }
+  .btn-back { background:none; border:none; color:var(--text-muted); cursor:pointer; font-family:'DM Sans',sans-serif; font-size:.85rem; margin-top:1rem; display:block; text-align:center; width:100%; padding:.5rem; }
+  .btn-back:hover { color:var(--teal); }
+
+  /* SELECT CANDIDATE */
+  #screen-select-candidate { min-height:100vh; background:var(--teal-dark); padding:2rem 1.5rem; }
+  .select-header { text-align:center; margin-bottom:2rem; padding-top:1rem; }
+  .select-header h2 { font-family:'Cormorant Garamond',serif; color:var(--white); font-size:2rem; margin-bottom:.3rem; }
+  .select-header p { color:rgba(255,255,255,.5); font-size:.875rem; }
+  .candidate-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:.75rem; max-width:600px; margin:0 auto; }
+  .candidate-btn { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:6px; padding:1rem .75rem; text-align:center; cursor:pointer; transition:all .2s; color:var(--white); font-family:'DM Sans',sans-serif; font-size:.875rem; }
+  .candidate-btn:hover { background:rgba(201,168,76,.15); border-color:var(--gold); color:var(--gold); transform:translateY(-2px); }
+  .cand-initial { display:block; width:40px; height:40px; background:var(--teal-mid); border-radius:50%; line-height:40px; font-size:1.1rem; font-weight:600; margin:0 auto .5rem; font-family:'Cormorant Garamond',serif; }
+  .cand-progress-mini { height:3px; background:rgba(255,255,255,.1); border-radius:2px; margin-top:.5rem; overflow:hidden; }
+  .cand-progress-mini-fill { height:100%; background:var(--gold); border-radius:2px; }
+
+  /* HEADER */
+  .app-header { background:var(--teal-dark); padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:0 2px 12px rgba(0,0,0,.15); }
+  .app-header .logo { font-family:'Cormorant Garamond',serif; color:var(--white); font-size:1.1rem; font-weight:600; }
+  .app-header .logo span { color:var(--gold); font-style:italic; }
+  .header-user { display:flex; align-items:center; gap:.75rem; }
+  .header-user-name { color:rgba(255,255,255,.8); font-size:.875rem; }
+  .btn-logout { background:rgba(255,255,255,.1); border:none; color:rgba(255,255,255,.7); padding:.4rem .75rem; border-radius:3px; font-size:.78rem; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .2s; }
+  .btn-logout:hover { background:rgba(255,255,255,.2); color:var(--white); }
+  .sync-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--gold); animation:pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .sync-label { font-size:.75rem; color:rgba(255,255,255,.5); }
+
+  /* CANDIDATE DASHBOARD */
+  #screen-candidate { background:var(--bg); min-height:100vh; }
+  .candidate-content { max-width:680px; margin:0 auto; padding:1.5rem; }
+  .candidate-hero { background:linear-gradient(135deg,var(--teal-dark) 0%,var(--teal) 100%); border-radius:10px; padding:1.75rem; margin-bottom:1.5rem; position:relative; overflow:hidden; }
+  .candidate-hero::after { content:'✝'; position:absolute; right:1.5rem; top:50%; transform:translateY(-50%); font-size:4rem; color:rgba(255,255,255,.06); font-family:serif; }
+  .candidate-hero h2 { font-family:'Cormorant Garamond',serif; color:var(--white); font-size:1.6rem; margin-bottom:.25rem; }
+  .candidate-hero p { color:rgba(255,255,255,.6); font-size:.85rem; margin-bottom:1.25rem; }
+  .progress-bar-wrap { background:rgba(255,255,255,.15); border-radius:100px; height:8px; overflow:hidden; margin-bottom:.5rem; }
+  .progress-bar-fill { height:100%; background:var(--gold); border-radius:100px; transition:width .5s ease; }
+  .progress-label { color:rgba(255,255,255,.7); font-size:.8rem; }
+  .progress-label strong { color:var(--gold); }
+
+  .section-card { background:var(--white); border-radius:8px; border:1px solid var(--border); margin-bottom:1rem; overflow:hidden; transition:box-shadow .2s; }
+  .section-card:hover { box-shadow:0 4px 16px rgba(13,107,110,.08); }
+  .section-card-header { padding:1.1rem 1.25rem; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+  .section-card-header:hover { background:var(--teal-light); }
+  .section-card-left { display:flex; align-items:center; gap:.875rem; flex:1; }
+  .section-icon { width:36px; height:36px; background:var(--teal-light); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+  .section-card-title { font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:600; color:var(--teal-dark); line-height:1.3; }
+  .section-card-meta { font-size:.78rem; color:var(--text-muted); margin-top:.15rem; }
+  .section-badge { font-size:.75rem; padding:.2rem .6rem; border-radius:100px; font-weight:500; white-space:nowrap; }
+  .badge-done { background:#dcfce7; color:var(--success); }
+  .badge-partial { background:#fef9c3; color:var(--warning); }
+  .badge-pending { background:#f3f4f6; color:var(--text-muted); }
+  .section-chevron { color:var(--text-muted); font-size:.85rem; margin-left:.5rem; transition:transform .2s; }
+  .section-card.open .section-chevron { transform:rotate(180deg); }
+  .section-card-body { display:none; border-top:1px solid var(--border); padding:1.25rem; background:#fafcfc; }
+  .section-card.open .section-card-body { display:block; }
+
+  .topic-item { display:flex; align-items:flex-start; gap:.875rem; padding:.875rem 0; border-bottom:1px solid var(--border); }
+  .topic-item:last-child { border-bottom:none; padding-bottom:0; }
+  .topic-check { width:20px; height:20px; border-radius:4px; border:2px solid var(--border); background:var(--white); flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; margin-top:2px; }
+  .topic-check.checked { background:var(--teal); border-color:var(--teal); color:white; }
+  .topic-check.checked::after { content:'✓'; font-size:.75rem; }
+  .topic-info { flex:1; }
+  .topic-name { font-size:.9rem; font-weight:500; color:var(--text); margin-bottom:.2rem; }
+  .topic-desc { font-size:.78rem; color:var(--text-muted); line-height:1.4; }
+  .topic-link-wrap { margin-top:.5rem; display:flex; gap:.5rem; }
+  .topic-link-input { flex:1; padding:.4rem .6rem; border:1px solid var(--border); border-radius:4px; font-size:.8rem; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color .2s; }
+  .topic-link-input:focus { border-color:var(--teal); }
+  .btn-save-link { background:var(--teal); color:var(--white); border:none; padding:.4rem .75rem; border-radius:4px; font-size:.78rem; cursor:pointer; font-family:'DM Sans',sans-serif; transition:background .2s; white-space:nowrap; }
+  .btn-save-link:hover { background:var(--teal-mid); }
+  .btn-save-link:disabled { background:var(--text-muted); cursor:not-allowed; }
+  .link-saved { font-size:.75rem; color:var(--success); margin-top:.25rem; }
+
+  .fast-card { background:var(--white); border:1px solid var(--border); border-radius:8px; padding:1.25rem; margin-bottom:1rem; display:flex; align-items:center; gap:1rem; }
+  .fast-icon { width:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+  .fast-icon.teal { background:var(--teal-light); }
+  .fast-icon.gold { background:var(--gold-light); }
+  .fast-info { flex:1; }
+  .fast-title { font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:600; color:var(--teal-dark); margin-bottom:.2rem; }
+  .fast-detail { font-size:.82rem; color:var(--text-muted); }
+  .fast-detail strong { color:var(--teal); }
+  .fast-status { font-size:.78rem; padding:.25rem .65rem; border-radius:100px; font-weight:500; }
+
+  /* COORDINATOR */
+  #screen-coordinator { background:var(--bg); min-height:100vh; }
+  .coord-content { max-width:900px; margin:0 auto; padding:1.5rem; }
+  .coord-tabs { display:flex; gap:.5rem; margin-bottom:1.5rem; border-bottom:2px solid var(--border); }
+  .coord-tab { background:none; border:none; padding:.75rem 1.25rem; font-family:'DM Sans',sans-serif; font-size:.9rem; color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .2s; }
+  .coord-tab.active { color:var(--teal); border-bottom-color:var(--teal); font-weight:500; }
+  .tab-panel { display:none; } .tab-panel.active { display:block; }
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+  .stat-card { background:var(--white); border:1px solid var(--border); border-radius:8px; padding:1.1rem; text-align:center; }
+  .stat-number { font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:700; color:var(--teal-dark); line-height:1; margin-bottom:.25rem; }
+  .stat-label { font-size:.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
+  .candidate-row { background:var(--white); border:1px solid var(--border); border-radius:8px; padding:1rem 1.25rem; margin-bottom:.75rem; display:flex; align-items:center; gap:1rem; cursor:pointer; transition:all .2s; }
+  .candidate-row:hover { border-color:var(--teal); box-shadow:0 2px 8px rgba(13,107,110,.08); }
+  .cand-avatar { width:40px; height:40px; background:var(--teal-light); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:700; color:var(--teal-dark); flex-shrink:0; }
+  .cand-row-info { flex:1; min-width:0; }
+  .cand-row-name { font-weight:500; font-size:.95rem; color:var(--text); margin-bottom:.3rem; }
+  .cand-row-bar-wrap { background:var(--teal-light); border-radius:100px; height:5px; overflow:hidden; }
+  .cand-row-bar-fill { height:100%; background:var(--teal); border-radius:100px; }
+  .cand-row-pct { font-size:.82rem; color:var(--text-muted); white-space:nowrap; flex-shrink:0; }
+  .cand-row-pct strong { color:var(--teal-dark); }
+  .add-form { background:var(--white); border:1px solid var(--border); border-radius:8px; padding:1.5rem; margin-bottom:1.5rem; }
+  .add-form h3 { font-family:'Cormorant Garamond',serif; color:var(--teal-dark); font-size:1.3rem; margin-bottom:1rem; }
+
+  /* DETAIL OVERLAY */
+  .cand-detail-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200; overflow-y:auto; padding:1rem; }
+  .cand-detail-overlay.open { display:flex; align-items:flex-start; justify-content:center; }
+  .cand-detail-box { background:var(--white); border-radius:10px; width:100%; max-width:620px; padding:1.75rem; margin:auto; position:relative; }
+  .cand-detail-close { position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.25rem; cursor:pointer; color:var(--text-muted); line-height:1; }
+  .cand-detail-name { font-family:'Cormorant Garamond',serif; font-size:1.75rem; color:var(--teal-dark); margin-bottom:.25rem; }
+  .cand-detail-pct { color:var(--text-muted); font-size:.875rem; margin-bottom:1.25rem; }
+  .detail-section { margin-bottom:1rem; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  .detail-section-header { padding:.75rem 1rem; background:var(--teal-light); display:flex; align-items:center; justify-content:space-between; }
+  .detail-section-title { font-weight:500; font-size:.9rem; color:var(--teal-dark); }
+  .detail-topic-row { padding:.6rem 1rem; border-top:1px solid var(--border); display:flex; align-items:center; gap:.75rem; font-size:.85rem; flex-wrap:wrap; }
+  .detail-topic-status { width:16px; height:16px; border-radius:3px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.65rem; }
+  .detail-topic-status.done { background:#dcfce7; color:var(--success); }
+  .detail-topic-status.pending { background:#f3f4f6; color:var(--text-muted); }
+  .detail-topic-name { flex:1; color:var(--text); }
+  .detail-topic-link { font-size:.75rem; color:var(--teal); text-decoration:none; }
+  .detail-topic-link:hover { text-decoration:underline; }
+  .coord-ctrl { padding:.75rem 1rem; border-top:1px solid var(--border); display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+  .coord-ctrl label { font-size:.82rem; color:var(--text-muted); font-weight:500; }
+  .coord-ctrl input[type="date"],.coord-ctrl input[type="datetime-local"],.coord-ctrl textarea { padding:.4rem .6rem; border:1px solid var(--border); border-radius:4px; font-size:.82rem; font-family:'DM Sans',sans-serif; outline:none; transition:border-color .2s; }
+  .coord-ctrl input:focus,.coord-ctrl textarea:focus { border-color:var(--teal); }
+  .coord-ctrl textarea { width:100%; min-height:60px; resize:vertical; }
+  .btn-sm { padding:.4rem .875rem; border-radius:4px; font-size:.8rem; font-family:'DM Sans',sans-serif; cursor:pointer; border:none; transition:all .2s; font-weight:500; }
+  .btn-sm-teal { background:var(--teal); color:var(--white); } .btn-sm-teal:hover { background:var(--teal-mid); }
+  .btn-sm-outline { background:transparent; border:1px solid var(--border); color:var(--text-muted); } .btn-sm-outline:hover { border-color:var(--teal); color:var(--teal); }
+  .result-select { padding:.4rem .6rem; border:1px solid var(--border); border-radius:4px; font-size:.82rem; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; background:var(--white); cursor:pointer; }
+
+  .toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(20px); background:var(--teal-dark); color:var(--white); padding:.75rem 1.5rem; border-radius:100px; font-size:.875rem; z-index:999; opacity:0; transition:all .3s ease; pointer-events:none; white-space:nowrap; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  @media(max-width:480px){.candidate-grid{grid-template-columns:repeat(3,1fr)}.stats-row{grid-template-columns:repeat(2,1fr)}}
+  ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div id="screen-loading" class="screen active">
+  <div class="spinner"></div>
+  <div class="loading-text">Conectando ao banco de dados...</div>
+</div>
+
+<div id="screen-landing" class="screen">
+  <div class="landing-cross">✝</div>
+  <h1 class="landing-title">Ordenação ao<br>Presbitério</h1>
+  <p class="landing-sub">Zion Church · Junho 2026</p>
+  <p class="landing-verse">"Se alguém aspira ao episcopado, excelente obra almeja." — 1 Tm 3.1</p>
+  <div class="landing-buttons">
+    <button class="btn-primary" onclick="showScreen('screen-select-candidate')">Sou Candidato</button>
+    <button class="btn-outline" onclick="showScreen('screen-coord-login')">Acesso do Coordenador</button>
+  </div>
+</div>
+
+<div id="screen-coord-login" class="screen">
+  <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;">
+    <div class="login-box">
+      <h2>Coordenador</h2>
+      <p>Digite a senha para acessar o painel</p>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="coord-pass-input" placeholder="••••" onkeydown="if(event.key==='Enter')checkCoordPass()">
+        <div class="error-msg" id="coord-pass-error">Senha incorreta.</div>
+      </div>
+      <button class="btn-full" onclick="checkCoordPass()">Entrar</button>
+      <button class="btn-back" onclick="showScreen('screen-landing')">← Voltar</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-select-candidate" class="screen">
+  <div class="select-header">
+    <h2>Quem é você?</h2>
+    <p>Selecione seu nome para acessar seu painel</p>
+  </div>
+  <div class="candidate-grid" id="candidate-grid"></div>
+  <div style="text-align:center;margin-top:1.5rem;">
+    <button class="btn-back" style="color:rgba(255,255,255,0.5)" onclick="showScreen('screen-landing')">← Voltar</button>
+  </div>
+</div>
+
+<div id="screen-candidate" class="screen">
+  <div class="app-header">
+    <div class="logo">Zion <span>Presbitério</span></div>
+    <div class="header-user">
+      <span class="sync-dot"></span><span class="sync-label">ao vivo</span>
+      <span class="header-user-name" id="cand-header-name" style="margin-left:.5rem"></span>
+      <button class="btn-logout" onclick="showScreen('screen-select-candidate')">Trocar</button>
+    </div>
+  </div>
+  <div class="candidate-content" id="candidate-content"></div>
+</div>
+
+<div id="screen-coordinator" class="screen">
+  <div class="app-header">
+    <div class="logo">Zion <span>Coordenador</span></div>
+    <div class="header-user">
+      <span class="sync-dot"></span><span class="sync-label">ao vivo</span>
+      <button class="btn-logout" style="margin-left:.5rem" onclick="showScreen('screen-landing')">Sair</button>
+    </div>
+  </div>
+  <div class="coord-content">
+    <div class="coord-tabs">
+      <button class="coord-tab active" onclick="switchTab('tab-overview')">Visão Geral</button>
+      <button class="coord-tab" onclick="switchTab('tab-candidates')">Candidatos</button>
+      <button class="coord-tab" onclick="switchTab('tab-add')">Adicionar</button>
+    </div>
+    <div class="tab-panel active" id="tab-overview">
+      <div class="stats-row" id="stats-row"></div>
+      <div id="overview-list"></div>
+    </div>
+    <div class="tab-panel" id="tab-candidates"><div id="candidates-list"></div></div>
+    <div class="tab-panel" id="tab-add">
+      <div class="add-form">
+        <h3>Adicionar Candidato</h3>
+        <div class="field"><label>Nome completo</label><input type="text" id="new-cand-name" placeholder="Ex: João da Silva"></div>
+        <button class="btn-full" onclick="addCandidate()">Adicionar Candidato</button>
+      </div>
+      <div class="add-form">
+        <h3>Remover Candidato</h3>
+        <div class="field"><label>Selecionar</label><select id="remove-cand-select"></select></div>
+        <button class="btn-full" style="background:var(--danger)" onclick="removeCandidate()">Remover</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cand-detail-overlay" id="cand-detail-overlay">
+  <div class="cand-detail-box" id="cand-detail-box"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBG35SXyUxJl_ymTDm1aBZFRqUfO5VLW8A",
+  authDomain: "ordenacao-presbiterio-2026.firebaseapp.com",
+  databaseURL: "https://ordenacao-presbiterio-2026-default-rtdb.firebaseio.com",
+  projectId: "ordenacao-presbiterio-2026",
+  storageBucket: "ordenacao-presbiterio-2026.firebasestorage.app",
+  messagingSenderId: "1093621316484",
+  appId: "1:1093621316484:web:126f229fb5e6f06138fbd1"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+
+const COORD_PASS = '3712';
+const JEJUM_TOTAL = 21;
+
+const SECTIONS = [
+  { id:'teologia_sistematica', icon:'📖', title:'Dissertação de Teologia Sistemática', meta:'7 loci — 2 a 3 páginas cada', topics:[
+    {id:'paterologia',name:'Paterologia',desc:'Deus Pai: atributos, natureza e relacionamento com a criação'},
+    {id:'cristologia',name:'Cristologia',desc:'Pessoa e obra de Jesus Cristo'},
+    {id:'pneumatologia',name:'Pneumatologia',desc:'Espírito Santo: pessoa, divindade, dons e frutos'},
+    {id:'soteriologia',name:'Soteriologia',desc:'Salvação: eleição, regeneração, justificação, glorificação'},
+    {id:'eclesiologia',name:'Eclesiologia',desc:'Igreja: natureza, propósito, governo e missão'},
+    {id:'antropologia',name:'Antropologia Cristã',desc:'Ser humano: criação à imagem de Deus, natureza e destino'},
+    {id:'escatologia',name:'Escatologia',desc:'Últimos tempos: retorno de Cristo, ressurreição, juízo final'},
+  ]},
+  { id:'doutrina_crista', icon:'✝️', title:'Princípios da Doutrina Cristã', meta:'Hebreus 6:1-2 — 6 princípios, máx. 2 páginas cada', topics:[
+    {id:'arrependimento',name:'Arrependimento de obras mortas',desc:'Significado bíblico e manifestação contínua na vida cristã'},
+    {id:'fe_deus',name:'Fé em Deus (justificação)',desc:'Natureza da fé salvadora e seu papel na justificação'},
+    {id:'batismos',name:'Doutrina dos batismos',desc:'Batismo nas águas, no Espírito Santo e no fogo'},
+    {id:'imposicao_maos',name:'Imposição de mãos',desc:'Significado e propósito na ordenação, cura e comissionamento'},
+    {id:'ressurreicao',name:'Ressurreição dos mortos',desc:'Certeza e base na ressurreição de Cristo'},
+    {id:'juizo_eterno',name:'Juízo eterno',desc:'Realidade do juízo divino e implicações para a vida cristã'},
+  ]},
+  { id:'historia_igreja', icon:'🏛️', title:'Dissertação da História da Igreja', meta:'8 tópicos cronológicos — máx. 2 páginas cada', topics:[
+    {id:'declaracao_cristo',name:'Declaração de Cristo e Pentecostes',desc:'Mateus 16:18-19 e Atos 2 — fundamento e nascimento da Igreja'},
+    {id:'igreja_primitiva',name:'A Igreja Primitiva',desc:'Expansão, perseguições e primeiras comunidades cristãs'},
+    {id:'cristandade_catolica',name:'O Cristianismo Católico',desc:'Concílios ecumênicos, teologia patrística e hierarquia eclesiástica'},
+    {id:'canon_biblico',name:'Estabelecimento do Cânon Bíblico',desc:'Processo histórico de reconhecimento e compilação das Escrituras'},
+    {id:'reforma_protestante',name:'A Reforma Protestante',desc:'Causas, figuras principais e consequências do século XVI'},
+    {id:'avivamentos',name:'Grandes Moveres de Avivamento',desc:'Avivamento Moraviano, Grandes Despertamentos, País de Gales'},
+    {id:'azusa_pentecostal',name:'Azusa e o Movimento Pentecostal',desc:'Surgimento do pentecostalismo moderno e impacto global'},
+    {id:'pentecostalismo_brasil',name:'O Pentecostalismo no Brasil',desc:'Chegada e desenvolvimento no contexto brasileiro'},
+  ]},
+  { id:'analise_pessoal', icon:'✍️', title:'Análise Pessoal', meta:'2 partes — mín. 8 páginas cada', topics:[
+    {id:'testemunho',name:'Testemunho Pessoal',desc:'Encontro com Deus, conversão, chamado ministerial (mín. 8 páginas)'},
+    {id:'biografia_lider',name:'Biografia de Líder Histórico',desc:'Wesley, Oral Roberts, Loren Cunningham, Catherine Booth ou Corrie Ten Boom (mín. 8 páginas)'},
+  ]},
+  { id:'leitura_livros', icon:'📚', title:'Leitura, Resumo e Opinião de Livros', meta:'7 livros — máx. 3 páginas por análise', topics:[
+    {id:'livro_hayashi_sarah',name:'Uma história da fidelidade de Deus — Sarah Hayashi',desc:'Quatro Ventos, 2024'},
+    {id:'livro_craig',name:'Em guarda — William Lane Craig',desc:'Vida Nova, 2011'},
+    {id:'livro_hayashi_teofilo',name:'O Reino inabalável — Teófilo Hayashi',desc:'Quatro Ventos, 2018'},
+    {id:'livro_lewis',name:'Cristianismo puro e simples — C. S. Lewis',desc:'Thomas Nelson Brasil, 2017'},
+    {id:'livro_coleman',name:'Plano mestre de evangelismo — Robert Coleman',desc:'Mundo Cristão, 2006'},
+    {id:'livro_johnson',name:'Quando o céu invade a terra — Bill Johnson',desc:'Editora Vida, 2010'},
+    {id:'livro_keener',name:'O Espírito na Igreja — Craig S. Keener',desc:'Vida Nova, 2018'},
+  ]},
+  { id:'cosmovisao', icon:'🌍', title:'Cosmovisão Bíblica', meta:'6 temas contemporâneos — máx. 2 páginas cada', topics:[
+    {id:'marxismo',name:'Marxismo Cultural',desc:'Influência na sociedade e perspectiva bíblica sobre justiça e transformação social'},
+    {id:'aborto',name:'Aborto',desc:'Reflexão à luz das Escrituras: santidade da vida e compaixão cristã'},
+    {id:'racismo',name:'Racismo',desc:'Análise bíblica sobre igualdade, dignidade humana e condenação do preconceito'},
+    {id:'lgbtqi',name:'LGBTQI+',desc:'Identidade de gênero e orientação sexual à luz da Palavra de Deus'},
+    {id:'hipergrace',name:'Hipergraça',desc:'Análise crítica comparada ao ensino bíblico sobre graça, arrependimento e santidade'},
+    {id:'feminismo',name:'Feminismo',desc:'Reflexão bíblica sobre igualdade em Cristo e papéis estabelecidos por Deus'},
+  ]},
+];
+
+let currentKey = null;
+let allCandidates = {};
+let unsubCand = null;
+
+// Init
+window.addEventListener('load', async () => {
+  try {
+    const snap = await get(ref(db, 'candidates'));
+    allCandidates = snap.val() || {};
+    showScreen('screen-landing');
+    onValue(ref(db, 'candidates'), snap => {
+      allCandidates = snap.val() || {};
+      const active = document.querySelector('.screen.active');
+      if (active?.id === 'screen-coordinator') renderCoord();
+      if (active?.id === 'screen-select-candidate') renderGrid();
+    });
+  } catch(e) {
+    document.querySelector('.loading-text').textContent = 'Erro de conexão. Verifique sua internet e recarregue.';
+  }
+});
+
+// Helpers
+const nameToKey = n => n.replace(/[.#$\[\]\/]/g,'_').replace(/\s+/g,'_');
+const ini = n => n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const escH = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const escQ = s => (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+const jejDays = d => d ? Math.max(0,Math.floor((Date.now()-new Date(d))/86400000)) : 0;
+const fmtDt = dt => dt ? new Date(dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+
+function calcPct(c) {
+  if(!c) return 0;
+  let tot=0,done=0;
+  SECTIONS.forEach(s=>s.topics.forEach(t=>{tot++;if(c.topics?.[t.id]?.done)done++;}));
+  tot++; if(c.jejum?.startDate && jejDays(c.jejum.startDate)>=JEJUM_TOTAL) done++;
+  tot++; if(c.sabatina?.result) done++;
+  return Math.round((done/tot)*100);
+}
+function secDone(c,sec){ return sec.topics.filter(t=>c.topics?.[t.id]?.done).length; }
+
+let toastT;
+window.showToast = msg => {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200);
+};
+
+// Navigation
+window.showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='screen-select-candidate') renderGrid();
+  if(id==='screen-coordinator') renderCoord();
+  if(id!=='screen-candidate' && unsubCand){ unsubCand(); unsubCand=null; }
+};
+window.checkCoordPass = () => {
+  const v=document.getElementById('coord-pass-input').value;
+  if(v===COORD_PASS){ document.getElementById('coord-pass-error').style.display='none'; document.getElementById('coord-pass-input').value=''; showScreen('screen-coordinator'); }
+  else document.getElementById('coord-pass-error').style.display='block';
+};
+window.switchTab = id => {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.coord-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx=['tab-overview','tab-candidates','tab-add'].indexOf(id);
+  document.querySelectorAll('.coord-tab')[idx].classList.add('active');
+  if(id==='tab-add') renderAddRemove();
+};
+
+// Grid
+function renderGrid(){
+  const grid=document.getElementById('candidate-grid');
+  const keys=Object.keys(allCandidates);
+  if(!keys.length){ grid.innerHTML='<p style="color:rgba(255,255,255,0.5);text-align:center;grid-column:1/-1;padding:2rem;">Nenhum candidato cadastrado.</p>'; return; }
+  grid.innerHTML=keys.map(k=>{
+    const c=allCandidates[k], pct=calcPct(c);
+    return `<button class="candidate-btn" onclick="openCand('${escQ(k)}')">
+      <span class="cand-initial">${ini(c.name)}</span>
+      <span style="display:block;font-size:.8rem;word-break:break-word">${c.name.split(' ')[0]}</span>
+      <div class="cand-progress-mini"><div class="cand-progress-mini-fill" style="width:${pct}%"></div></div>
+    </button>`;
+  }).join('');
+}
+
+window.openCand = key => {
+  const c=allCandidates[key]; if(!c) return;
+  currentKey=key;
+  document.getElementById('cand-header-name').textContent=c.name.split(' ')[0];
+  renderCandDash(c);
+  showScreen('screen-candidate');
+  if(unsubCand) unsubCand();
+  unsubCand=onValue(ref(db,`candidates/${key}`),snap=>{ const d=snap.val(); if(d){allCandidates[key]=d;renderCandDash(d);} });
+};
+
+// Candidate Dashboard
+function renderCandDash(c){
+  const pct=calcPct(c);
+  let html=`<div class="candidate-hero">
+    <h2>${escH(c.name)}</h2>
+    <p>Processo de Ordenação ao Presbitério · Junho 2026</p>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    <p class="progress-label">Progresso geral: <strong>${pct}%</strong></p>
+  </div>`;
+
+  SECTIONS.forEach(sec=>{
+    const done=secDone(c,sec), total=sec.topics.length;
+    const bc=done===total?'badge-done':done>0?'badge-partial':'badge-pending';
+    html+=`<div class="section-card" id="sec-${sec.id}">
+      <div class="section-card-header" onclick="toggleSec('sec-${sec.id}')">
+        <div class="section-card-left">
+          <div class="section-icon">${sec.icon}</div>
+          <div><div class="section-card-title">${sec.title}</div><div class="section-card-meta">${sec.meta}</div></div>
+        </div>
+        <span class="section-badge ${bc}">${done===total?'✓ Completo':`${done}/${total}`}</span>
+        <span class="section-chevron">▼</span>
+      </div>
+      <div class="section-card-body">
+        ${sec.topics.map(t=>{
+          const td=c.topics?.[t.id]||{};
+          return `<div class="topic-item">
+            <div class="topic-check ${td.done?'checked':''}" onclick="toggleTopic('${escQ(t.id)}')"></div>
+            <div class="topic-info">
+              <div class="topic-name">${t.name}</div>
+              <div class="topic-desc">${t.desc}</div>
+              <div class="topic-link-wrap">
+                <input class="topic-link-input" id="link-${t.id}" type="url" placeholder="Link do arquivo (Google Drive...)" value="${escH(td.link||'')}">
+                <button class="btn-save-link" onclick="saveLink('${escQ(t.id)}')">Salvar</button>
+              </div>
+              ${td.link?`<div class="link-saved">🔗 <a href="${escH(td.link)}" target="_blank" style="color:var(--teal)">Arquivo vinculado</a></div>`:''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+
+  const jej=c.jejum||{}, days=jej.startDate?jejDays(jej.startDate):0, jejDone=days>=JEJUM_TOTAL;
+  const jejDetail=jej.startDate?(jejDone?`Concluído! Iniciado em ${new Date(jej.startDate).toLocaleDateString('pt-BR')}.`:`Iniciado em ${new Date(jej.startDate).toLocaleDateString('pt-BR')} · <strong>${JEJUM_TOTAL-days} dias restantes</strong>`):'Aguardando confirmação do coordenador';
+  html+=`<div class="fast-card">
+    <div class="fast-icon teal">🙏</div>
+    <div class="fast-info">
+      <div class="fast-title">Jejum e Oração — 21 Dias</div>
+      <div class="fast-detail">${jejDetail}</div>
+      ${jej.startDate?`<div class="progress-bar-wrap" style="background:var(--teal-light);margin-top:.5rem"><div class="progress-bar-fill" style="width:${Math.min(100,(days/JEJUM_TOTAL)*100)}%;background:var(--teal)"></div></div>`:''}
+    </div>
+    <span class="fast-status ${jejDone?'badge-done':jej.startDate?'badge-partial':'badge-pending'}">${jejDone?'✓':jej.startDate?`${days}d`:'Pendente'}</span>
+  </div>`;
+
+  const sab=c.sabatina||{};
+  const rl={'':'Pendente',aprovado:'Aprovado',aprovado_cond:'Aprovação Condicional',adiado:'Adiado'};
+  const rc={'':'badge-pending',aprovado:'badge-done',aprovado_cond:'badge-partial',adiado:'badge-pending'};
+  html+=`<div class="fast-card">
+    <div class="fast-icon gold">⚖️</div>
+    <div class="fast-info">
+      <div class="fast-title">Sabatina com a Banca Pastoral</div>
+      <div class="fast-detail">${sab.datetime?`📅 ${fmtDt(sab.datetime)}`:'Data a ser confirmada'}${sab.obs?`<br><em style="font-size:.8rem">${escH(sab.obs)}</em>`:''}</div>
+    </div>
+    <span class="fast-status ${rc[sab.result||'']}">${rl[sab.result||'']}</span>
+  </div>`;
+
+  document.getElementById('candidate-content').innerHTML=html;
+}
+
+window.toggleSec = id => document.getElementById(id).classList.toggle('open');
+
+window.toggleTopic = async topicId => {
+  if(!currentKey) return;
+  const c=allCandidates[currentKey];
+  const cur=c.topics?.[topicId]?.done;
+  await update(ref(db,`candidates/${currentKey}/topics/${topicId}`),{done:!cur});
+  showToast('Progresso salvo!');
+};
+
+window.saveLink = async topicId => {
+  if(!currentKey) return;
+  const input=document.getElementById('link-'+topicId); if(!input) return;
+  const val=input.value.trim();
+  const btn=input.nextElementSibling; btn.disabled=true; btn.textContent='...';
+  await update(ref(db,`candidates/${currentKey}/topics/${topicId}`),{link:val,done:!!val});
+  btn.disabled=false; btn.textContent='Salvar';
+  showToast('Link salvo!');
+};
+
+// Coordinator
+function renderCoord(){
+  const cands=Object.values(allCandidates);
+  const tot=cands.length, avg=tot?Math.round(cands.reduce((s,c)=>s+calcPct(c),0)/tot):0;
+  const done=cands.filter(c=>calcPct(c)===100).length;
+  const jejD=cands.filter(c=>c.jejum?.startDate&&jejDays(c.jejum.startDate)>=JEJUM_TOTAL).length;
+  document.getElementById('stats-row').innerHTML=`
+    <div class="stat-card"><div class="stat-number">${tot}</div><div class="stat-label">Candidatos</div></div>
+    <div class="stat-card"><div class="stat-number">${avg}%</div><div class="stat-label">Progresso Médio</div></div>
+    <div class="stat-card"><div class="stat-number">${done}</div><div class="stat-label">Concluídos</div></div>
+    <div class="stat-card"><div class="stat-number">${jejD}</div><div class="stat-label">Jejum Completo</div></div>`;
+  const rows=!tot?'<p style="color:var(--text-muted);text-align:center;padding:2rem 0;">Nenhum candidato. Acesse "Adicionar".</p>'
+    :Object.entries(allCandidates).map(([k,c])=>{
+      const pct=calcPct(c);
+      return `<div class="candidate-row" onclick="openCandDetail('${escQ(k)}')">
+        <div class="cand-avatar">${ini(c.name)}</div>
+        <div class="cand-row-info"><div class="cand-row-name">${escH(c.name)}</div>
+          <div class="cand-row-bar-wrap"><div class="cand-row-bar-fill" style="width:${pct}%"></div></div></div>
+        <div class="cand-row-pct"><strong>${pct}%</strong></div>
+      </div>`;
+    }).join('');
+  document.getElementById('overview-list').innerHTML=rows;
+  document.getElementById('candidates-list').innerHTML=rows;
+}
+
+window.openCandDetail = key => {
+  const c=allCandidates[key]; if(!c) return;
+  const pct=calcPct(c), jej=c.jejum||{}, days=jej.startDate?jejDays(jej.startDate):0, jejDone=days>=JEJUM_TOTAL, sab=c.sabatina||{};
+  let html=SECTIONS.map(sec=>{
+    const done=secDone(c,sec);
+    return `<div class="detail-section">
+      <div class="detail-section-header"><span class="detail-section-title">${sec.icon} ${sec.title}</span>
+        <span class="section-badge ${done===sec.topics.length?'badge-done':done>0?'badge-partial':'badge-pending'}">${done}/${sec.topics.length}</span></div>
+      ${sec.topics.map(t=>{const td=c.topics?.[t.id]||{};return `<div class="detail-topic-row">
+        <div class="detail-topic-status ${td.done?'done':'pending'}">${td.done?'✓':'○'}</div>
+        <div class="detail-topic-name">${t.name}</div>
+        ${td.link?`<a class="detail-topic-link" href="${escH(td.link)}" target="_blank">Ver arquivo</a>`:''}
+      </div>`;}).join('')}
+    </div>`;
+  }).join('');
+
+  html+=`<div class="detail-section">
+    <div class="detail-section-header"><span class="detail-section-title">🙏 Jejum e Oração — 21 Dias</span>
+      <span class="section-badge ${jejDone?'badge-done':jej.startDate?'badge-partial':'badge-pending'}">${jejDone?'Completo':jej.startDate?`${days}/21 dias`:'Pendente'}</span></div>
+    <div class="coord-ctrl"><label>Data de início:</label>
+      <input type="date" id="jej-dt-${escQ(key)}" value="${escH(jej.startDate||'')}">
+      <button class="btn-sm btn-sm-teal" onclick="saveJejum('${escQ(key)}')">Salvar</button>
+      ${jej.startDate?`<button class="btn-sm btn-sm-outline" onclick="clearJejum('${escQ(key)}')">Limpar</button>`:''}
+    </div>
+  </div>`;
+
+  html+=`<div class="detail-section">
+    <div class="detail-section-header"><span class="detail-section-title">⚖️ Sabatina com a Banca Pastoral</span></div>
+    <div class="coord-ctrl"><label>Data e horário:</label>
+      <input type="datetime-local" id="sab-dt-${escQ(key)}" value="${escH(sab.datetime||'')}"></div>
+    <div class="coord-ctrl"><label>Resultado:</label>
+      <select class="result-select" id="sab-res-${escQ(key)}">
+        <option value="" ${!sab.result?'selected':''}>Pendente</option>
+        <option value="aprovado" ${sab.result==='aprovado'?'selected':''}>Aprovado</option>
+        <option value="aprovado_cond" ${sab.result==='aprovado_cond'?'selected':''}>Aprovação Condicional</option>
+        <option value="adiado" ${sab.result==='adiado'?'selected':''}>Adiado</option>
+      </select></div>
+    <div class="coord-ctrl" style="flex-direction:column;align-items:flex-start"><label>Observações para o candidato:</label>
+      <textarea id="sab-obs-${escQ(key)}">${escH(sab.obs||'')}</textarea>
+      <button class="btn-sm btn-sm-teal" style="margin-top:.5rem" onclick="saveSabatina('${escQ(key)}')">Salvar</button></div>
+  </div>`;
+
+  document.getElementById('cand-detail-box').innerHTML=`
+    <button class="cand-detail-close" onclick="closeCandDetail()">✕</button>
+    <div class="cand-detail-name">${escH(c.name)}</div>
+    <div class="cand-detail-pct">Progresso: ${pct}% concluído</div>${html}`;
+  document.getElementById('cand-detail-overlay').classList.add('open');
+};
+
+window.closeCandDetail = () => document.getElementById('cand-detail-overlay').classList.remove('open');
+
+window.saveJejum = async key => {
+  const v=document.getElementById('jej-dt-'+key)?.value||'';
+  await update(ref(db,`candidates/${key}/jejum`),{startDate:v});
+  showToast('Jejum atualizado!'); openCandDetail(key);
+};
+window.clearJejum = async key => {
+  await set(ref(db,`candidates/${key}/jejum`),{});
+  showToast('Jejum removido'); openCandDetail(key);
+};
+window.saveSabatina = async key => {
+  await set(ref(db,`candidates/${key}/sabatina`),{
+    datetime:document.getElementById('sab-dt-'+key)?.value||'',
+    result:document.getElementById('sab-res-'+key)?.value||'',
+    obs:document.getElementById('sab-obs-'+key)?.value||''
+  });
+  showToast('Sabatina atualizada!'); openCandDetail(key);
+};
+
+window.addCandidate = async () => {
+  const input=document.getElementById('new-cand-name');
+  const name=input.value.trim(); if(!name){showToast('Digite o nome');return;}
+  const key=nameToKey(name);
+  if(allCandidates[key]){showToast('Candidato já existe');return;}
+  await set(ref(db,`candidates/${key}`),{name,topics:{},jejum:{},sabatina:{}});
+  input.value=''; showToast(`${name} adicionado!`); renderAddRemove();
+};
+window.removeCandidate = async () => {
+  const key=document.getElementById('remove-cand-select').value; if(!key) return;
+  const name=allCandidates[key]?.name||key;
+  if(!confirm(`Remover "${name}"? Esta ação não pode ser desfeita.`)) return;
+  await remove(ref(db,`candidates/${key}`));
+  showToast(`${name} removido`); renderAddRemove();
+};
+function renderAddRemove(){
+  const sel=document.getElementById('remove-cand-select');
+  const keys=Object.keys(allCandidates);
+  sel.innerHTML=!keys.length?'<option value="">Nenhum candidato</option>':keys.map(k=>`<option value="${escQ(k)}">${escH(allCandidates[k].name)}</option>`).join('');
+}
+
+document.getElementById('cand-detail-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('cand-detail-overlay'))closeCandDetail();});
+</script>
+</body>
+</html>
