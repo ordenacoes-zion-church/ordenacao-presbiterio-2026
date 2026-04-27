@@ -327,10 +327,6 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const db = getDatabase(fbApp);
 
-// ── Google Drive upload config ──
-// Pasta: "Ordenação Presbiterial - Junho 2026"
-const DRIVE_FOLDER_ID = '1hWqj4ecytgG1vjDTGBgyvWMpoNEJrxdv';
-
 // ── Constants ──
 const COORD_PASS = '3712';
 const JEJUM_TOTAL = 21;
@@ -403,10 +399,7 @@ function calcPct(c) {
   if(!c) return 0;
   let tot=0,done=0;
   SECTIONS.forEach(s=>{
-    // upload conta como 1 por seção (qualquer arquivo enviado)
-    tot++;
-    const secUps = c.uploads?.[s.id] || {};
-    if(Object.values(secUps).some(f=>f&&f.fileId)) done++;
+
     // cada tópico também conta
     s.topics.forEach(t=>{ tot++; if(c.topics?.[t.id]?.done) done++; });
   });
@@ -502,176 +495,15 @@ window.openCand = key => {
 // we use Google Picker API with the user signing in via Google OAuth popup.
 // Files go to the shared folder DRIVE_FOLDER_ID.
 
-let gapiLoaded = false;
-let gisLoaded = false;
-let accessToken = null;
-const CLIENT_ID = '152689970854-20o2vhjn1cs1l5rqomk1avtrbm7kmn0p.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-function loadGoogleAPIs() {
-  if(!gapiLoaded){
-    const s=document.createElement('script');
-    s.src='https://apis.google.com/js/api.js';
-    s.onload=()=>{gapi.load('client',()=>{gapiLoaded=true;});};
-    document.head.appendChild(s);
-  }
-  if(!gisLoaded){
-    const s=document.createElement('script');
-    s.src='https://accounts.google.com/gsi/client';
-    s.onload=()=>{gisLoaded=true;};
-    document.head.appendChild(s);
-  }
-}
 
-async function getAccessToken() {
-  return new Promise((resolve,reject)=>{
-    // Always request fresh token to avoid stale scope issues
-    accessToken = null;
-    if(!gisLoaded || !window.google){ reject('Google APIs not loaded'); return; }
-    const client = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: (resp) => {
-        if(resp.error){ reject(resp.error); return; }
-        accessToken = resp.access_token;
-        resolve(accessToken);
-      }
-    });
-    client.requestAccessToken({prompt:'consent'});
-  });
-}
 
-window.uploadFileToDrive = async (secId, candName, file) => {
-  const statusEl = document.getElementById(`upload-status-${secId}`);
-  const progressWrap = document.getElementById(`upload-progress-${secId}`);
-  const progressFill = document.getElementById(`upload-progress-fill-${secId}`);
-  const dropZone = document.getElementById(`dropzone-${secId}`);
 
-  if(!file) return;
+;
 
-  // Check file type
-  const allowed = ['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/msword'];
-  if(!allowed.includes(file.type) && !file.name.match(/\.(pdf|doc|docx)$/i)){
-    showToast('Envie apenas arquivos PDF ou Word (.docx)');
-    return;
-  }
 
-  // Show progress
-  if(statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted)">Autenticando com Google...</span>';
-  if(progressWrap) progressWrap.style.display='block';
-  if(progressFill) progressFill.style.width='10%';
 
-  // Show popup blocker warning on first upload attempt
-  if(!sessionStorage.getItem('popup_warned')) {
-    sessionStorage.setItem('popup_warned', '1');
-    const warned = await new Promise(resolve => {
-      const overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;';
-      overlay.innerHTML = `
-        <div style="background:#fff;border-radius:10px;padding:2rem;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">
-          <div style="font-size:2rem;margin-bottom:.75rem;">🔔</div>
-          <h3 style="font-family:'Cormorant Garamond',serif;color:#094d50;font-size:1.4rem;margin-bottom:.75rem;">Antes de enviar</h3>
-          <p style="font-size:.875rem;color:#6b7280;line-height:1.6;margin-bottom:1.25rem;">
-            Para enviar arquivos, o Google abrirá uma janela de autorização.<br><br>
-            <strong style="color:#1a1a1a;">Certifique-se de que o bloqueador de popups está desativado</strong> para este site antes de continuar.
-          </p>
-          <p style="font-size:.78rem;color:#9ca3af;margin-bottom:1.5rem;">No Chrome: clique no ícone 🚫 na barra de endereços → "Sempre permitir popups"</p>
-          <button id="popup-ok-btn" style="background:#0d6b6e;color:#fff;border:none;padding:.875rem 2rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:500;cursor:pointer;width:100%;">Entendido, continuar</button>
-        </div>`;
-      document.body.appendChild(overlay);
-      document.getElementById('popup-ok-btn').onclick = () => {
-        document.body.removeChild(overlay);
-        resolve(true);
-      };
-    });
-  }
 
-  try {
-    // Load APIs if needed
-    loadGoogleAPIs();
-    await new Promise(r=>setTimeout(r,500)); // brief wait for scripts
-
-    let token;
-    try {
-      token = await getAccessToken();
-    } catch(e) {
-      if(statusEl) statusEl.innerHTML = '<span style="color:var(--danger)">⚠ Configure o Google OAuth para habilitar o upload. Por enquanto, cole o link abaixo.</span>';
-      if(progressWrap) progressWrap.style.display='none';
-      showFallbackLinkInput(secId);
-      return;
-    }
-
-    if(progressFill) progressFill.style.width='30%';
-    if(statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted)">Enviando arquivo...</span>';
-
-    // Find or create candidate subfolder
-    const secLabel = SECTIONS.find(s=>s.id===secId)?.title || secId;
-    const fileName = `${candName} — ${secLabel}${file.name.match(/\.[^.]+$/)?.[0]||'.pdf'}`;
-
-    // Upload via multipart
-    if(progressFill) progressFill.style.width='50%';
-    if(statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted)">Enviando arquivo...</span>';
-
-    // Upload file to main folder with candidate name prefix
-    const prefixedName = `${candName} — ${file.name}`;
-    const metadata = { name: prefixedName, parents: [DRIVE_FOLDER_ID] };
-    const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(metadata)],{type:'application/json'}));
-    form.append('file', file);
-
-    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
-      method:'POST',
-      headers:{ Authorization:`Bearer ${token}` },
-      body: form
-    });
-
-    if(!res.ok){ 
-      const errBody = await res.text();
-      console.error('Upload error:', res.status, errBody);
-      throw new Error('Upload failed: ' + res.status + ' — ' + errBody); 
-    }
-
-    const data = await res.json();
-    if(progressFill) progressFill.style.width='100%';
-
-    // Save to Firebase keeping original filename
-    const fileKey = 'f_' + Date.now();
-    await set(ref(db,`candidates/${currentKey}/uploads/${secId}/${fileKey}`),{
-      fileId: data.id,
-      fileName: prefixedName,
-      fileUrl: data.webViewLink,
-      uploadedAt: new Date().toISOString()
-    });
-
-    setTimeout(()=>{ if(progressWrap) progressWrap.style.display='none'; }, 800);
-    showToast('Arquivo enviado com sucesso!');
-
-  } catch(err) {
-    console.error(err);
-    if(statusEl) statusEl.innerHTML = `<span style="color:var(--danger)">Erro: ${err.message}</span>`;
-    if(progressWrap) progressWrap.style.display='none';
-  }
-};
-
-function showFallbackLinkInput(secId){
-  const area = document.getElementById(`fallback-link-${secId}`);
-  if(area) area.style.display='flex';
-}
-
-window.saveFallbackLink = async (secId) => {
-  const input = document.getElementById(`fallback-input-${secId}`);
-  if(!input||!currentKey) return;
-  const val = input.value.trim();
-  if(!val){ showToast('Cole o link do arquivo'); return; }
-  const fkey = 'f_' + Date.now();
-  await set(ref(db,`candidates/${currentKey}/uploads/${secId}/${fkey}`),{
-    fileId: 'link',
-    fileName: 'Link externo',
-    fileUrl: val,
-    uploadedAt: new Date().toISOString()
-  });
-  showToast('Link salvo!');
-};
 
 // ── Candidate Dashboard ──
 function renderCandDash(c){
@@ -720,40 +552,18 @@ function renderCandDash(c){
         <!-- Upload area BELOW -->
         <div class="section-upload-area" style="border-top:1px solid var(--border);">
           <span class="upload-label">📎 Arquivos enviados</span>
-          <div id="upload-list-${sec.id}">
-            ${(()=>{
-              const ups = c.uploads?.[sec.id] || {};
-              const files = Object.entries(ups).filter(([k,v])=>v && v.fileId);
-              if(!files.length) return '';
-              return files.map(([fkey,f])=>`
-                <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;background:#f0fdf4;border-radius:6px;border:1px solid #bbf7d0;margin-bottom:.4rem;">
-                  <span>✅</span>
-                  <div style="flex:1;min-width:0;">
-                    <div style="font-size:.82rem;font-weight:500;color:var(--success);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escH(f.fileName||'Arquivo')}</div>
-                    <div style="font-size:.72rem;color:var(--text-muted)">${f.uploadedAt?new Date(f.uploadedAt).toLocaleDateString('pt-BR'):''}</div>
-                  </div>
-                  <a href="${escH(f.fileUrl||'')}" target="_blank" class="upload-file-link">🔗 Abrir</a>
-                  <button onclick="removeFile('${escQ(sec.id)}','${escQ(fkey)}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;" title="Remover">✕</button>
-                </div>`).join('');
-            })()}
-          </div>
-          <div class="upload-drop-zone" id="dropzone-${sec.id}"
-            ondragover="event.preventDefault();this.classList.add('dragover')"
-            ondragleave="this.classList.remove('dragover')"
-            ondrop="event.preventDefault();this.classList.remove('dragover');handleDropMulti('${escQ(sec.id)}','${escQ(c.name)}',event)">
-            <input type="file" accept=".pdf,.doc,.docx" multiple onchange="handleFileInputMulti('${escQ(sec.id)}','${escQ(c.name)}',this)">
-            <div class="upload-drop-icon">📄</div>
-            <div class="upload-drop-text">Arraste arquivos ou <strong>clique para selecionar</strong></div>
-            <div class="upload-drop-text" style="margin-top:.2rem;font-size:.72rem;">PDF ou Word (.docx) · múltiplos arquivos permitidos</div>
-          </div>
-          <div class="upload-progress" id="upload-progress-${sec.id}">
-            <div class="upload-progress-fill" id="upload-progress-fill-${sec.id}" style="width:0%"></div>
-          </div>
-          <div class="upload-status" id="upload-status-${sec.id}"></div>
-          <div id="fallback-link-${sec.id}" style="display:none;gap:.5rem;margin-top:.5rem;">
-            <input id="fallback-input-${sec.id}" type="url" placeholder="Cole o link do Google Drive..." style="flex:1;padding:.4rem .6rem;border:1px solid var(--border);border-radius:4px;font-size:.82rem;font-family:'DM Sans',sans-serif;outline:none;">
-            <button onclick="saveFallbackLink('${escQ(sec.id)}')" style="background:var(--teal);color:white;border:none;padding:.4rem .75rem;border-radius:4px;font-size:.78rem;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;">Salvar link</button>
-          </div>
+          <!-- Drive button -->
+          <a href="https://drive.google.com/drive/folders/1hWqj4ecytgG1vjDTGBgyvWMpoNEJrxdv?usp=drive_link" target="_blank"
+            style="display:flex;align-items:center;gap:.75rem;padding:1rem;background:var(--teal-light);border:1.5px dashed var(--teal);border-radius:8px;text-decoration:none;transition:all .2s;margin-bottom:.5rem;"
+            onmouseover="this.style.background='#d0ecec'" onmouseout="this.style.background='var(--teal-light)'">
+            <span style="font-size:1.5rem">📁</span>
+            <div>
+              <div style="font-size:.88rem;font-weight:500;color:var(--teal-dark);">Abrir pasta no Google Drive</div>
+              <div style="font-size:.75rem;color:var(--text-muted);">Faça upload do arquivo nesta pasta</div>
+            </div>
+            <span style="margin-left:auto;font-size:.8rem;color:var(--teal);">→</span>
+          </a>
+          <p style="font-size:.75rem;color:var(--text-muted);text-align:center;">Após enviar, marque os itens acima como concluídos ✓</p>
         </div>
       </div>
     </div>`;
@@ -791,21 +601,9 @@ function renderCandDash(c){
   document.getElementById('candidate-content').innerHTML=html;
 }
 
-window.handleDropMulti = (secId, candName, event) => {
-  const files = Array.from(event.dataTransfer.files);
-  files.forEach(f => uploadFileToDrive(secId, candName, f));
-};
-window.handleFileInputMulti = (secId, candName, input) => {
-  const files = Array.from(input.files);
-  files.forEach(f => uploadFileToDrive(secId, candName, f));
-  input.value = '';
-};
-window.removeFile = async (secId, fileKey) => {
-  if(!currentKey) return;
-  if(!confirm('Remover este arquivo?')) return;
-  await set(ref(db,`candidates/${currentKey}/uploads/${secId}/${fileKey}`), null);
-  showToast('Arquivo removido');
-};
+
+
+
 
 window.toggleSec = id => document.getElementById(id).classList.toggle('open');
 window.toggleTopic = async topicId => {
@@ -880,18 +678,13 @@ window.openCandDetail = key => {
     return `<div class="detail-section">
       <div class="detail-section-header">
         <span class="detail-section-title">${sec.icon} ${sec.title}</span>
-        ${(()=>{
-          const ups2 = c.uploads?.[sec.id] || {};
-          const nFiles = Object.values(ups2).filter(f=>f&&f.fileId).length;
-          const bc2 = nFiles>0?(done===sec.topics.length?'badge-done':'badge-partial'):'badge-pending';
-          return `<span class="section-badge ${bc2}">${nFiles>0?nFiles+' arquivo(s)':'Sem arquivo'} · ${done}/${sec.topics.length}</span>`;
-        })()}
+        <span class="section-badge ${done===sec.topics.length?'badge-done':done>0?'badge-partial':'badge-pending'}">${done===sec.topics.length?'✓ Completo':`${done}/${sec.topics.length}`}</span>
       </div>
-      ${(()=>{
-        const ups = c.uploads?.[sec.id] || {};
-        const files = Object.values(ups).filter(f=>f&&f.fileId);
-        return files.map(f=>`<div class="detail-topic-row"><span style="font-size:.85rem">📎</span><div class="detail-topic-name">${escH(f.fileName||'Arquivo')}</div><a class="detail-topic-link" href="${escH(f.fileUrl||'')}" target="_blank">Abrir no Drive</a></div>`).join('');
-      })()}
+      <div class="detail-topic-row">
+        <span style="font-size:.85rem">📁</span>
+        <div class="detail-topic-name" style="font-size:.82rem;color:var(--text-muted)">Arquivos enviados na pasta do Drive</div>
+        <a class="detail-topic-link" href="https://drive.google.com/drive/folders/1hWqj4ecytgG1vjDTGBgyvWMpoNEJrxdv?usp=drive_link" target="_blank">Abrir pasta</a>
+      </div>
       ${sec.topics.map(t=>{const td=c.topics?.[t.id]||{};return `<div class="detail-topic-row">
         <div class="detail-topic-status ${td.done?'done':'pending'}">${td.done?'✓':'○'}</div>
         <div class="detail-topic-name">${t.name}</div>
