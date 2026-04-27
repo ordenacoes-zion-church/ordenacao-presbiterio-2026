@@ -525,7 +525,8 @@ function loadGoogleAPIs() {
 
 async function getAccessToken() {
   return new Promise((resolve,reject)=>{
-    if(accessToken){ resolve(accessToken); return; }
+    // Always request fresh token to avoid stale scope issues
+    accessToken = null;
     if(!gisLoaded || !window.google){ reject('Google APIs not loaded'); return; }
     const client = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
@@ -624,7 +625,11 @@ window.uploadFileToDrive = async (secId, candName, file) => {
       body: form
     });
 
-    if(!res.ok){ throw new Error('Upload failed: ' + res.status); }
+    if(!res.ok){ 
+      const errBody = await res.text();
+      console.error('Upload error:', res.status, errBody);
+      throw new Error('Upload failed: ' + res.status + ' — ' + errBody); 
+    }
 
     const data = await res.json();
     if(progressFill) progressFill.style.width='100%';
@@ -643,7 +648,7 @@ window.uploadFileToDrive = async (secId, candName, file) => {
 
   } catch(err) {
     console.error(err);
-    if(statusEl) statusEl.innerHTML = '<span style="color:var(--danger)">Erro no envio. Tente novamente.</span>';
+    if(statusEl) statusEl.innerHTML = `<span style="color:var(--danger)">Erro: ${err.message}</span>`;
     if(progressWrap) progressWrap.style.display='none';
   }
 };
