@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avaliação — Ordenação ao Presbitério · Zion Church</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal:#0d6b6e;--teal-dark:#094d50;--teal-light:#e8f4f4;--teal-mid:#1a8a8e;
+    --gold:#c9a84c;--gold-light:#f5edd6;
+    --text:#1a1a1a;--text-muted:#6b7280;--border:#d1e8e8;--bg:#f7fafa;--white:#ffffff;
+    --danger:#c0392b;--success:#1a7a4a;--warning:#b8860b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  h1,h2,h3,h4{font-family:'Cormorant Garamond',serif;}
+  .screen{display:none!important;}
+  .screen.active{display:block!important;}
+  #screen-loading.active{display:flex!important;}
+  #screen-login.active{display:flex!important;}
+
+  /* LOADING */
+  #screen-loading{min-height:100vh;background:var(--teal-dark);flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;}
+  .spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{color:rgba(255,255,255,.6);font-size:.9rem;}
+
+  /* LOGIN */
+  #screen-login{min-height:100vh;background:var(--teal-dark);align-items:center;justify-content:center;padding:2rem;position:relative;overflow:hidden;}
+  #screen-login::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(201,168,76,.08) 0%,transparent 60%);pointer-events:none;}
+  .login-box{background:var(--white);border-radius:8px;padding:2.5rem;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;}
+  .login-cross{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--gold);text-align:center;margin-bottom:1rem;}
+  .login-box h2{font-size:1.8rem;color:var(--teal-dark);margin-bottom:.25rem;text-align:center;}
+  .login-box .login-sub{color:var(--text-muted);font-size:.82rem;margin-bottom:2rem;text-align:center;font-style:italic;}
+  .field{margin-bottom:1.25rem;}
+  .field label{display:block;font-size:.8rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;}
+  .field input{width:100%;padding:.75rem 1rem;border:1px solid var(--border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--text);background:var(--white);outline:none;transition:border-color .2s;}
+  .field input:focus{border-color:var(--teal);}
+  .error-msg{color:var(--danger);font-size:.82rem;margin-top:.5rem;display:none;}
+  .btn-full{width:100%;background:var(--teal);color:var(--white);border:none;padding:.875rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:500;cursor:pointer;transition:background .2s;margin-top:.5rem;}
+  .btn-full:hover{background:var(--teal-mid);}
+
+  /* HEADER */
+  .app-header{background:var(--teal-dark);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.15);}
+  .app-header .logo{font-family:'Cormorant Garamond',serif;color:var(--white);font-size:1.1rem;font-weight:600;}
+  .app-header .logo span{color:var(--gold);font-style:italic;}
+  .btn-logout{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);padding:.4rem .75rem;border-radius:3px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+  .btn-logout:hover{background:rgba(255,255,255,.2);color:var(--white);}
+  .sync-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.5s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .sync-label{font-size:.75rem;color:rgba(255,255,255,.5);}
+
+  /* MAIN */
+  #screen-main{background:var(--bg);min-height:100vh;}
+  .main-content{max-width:900px;margin:0 auto;padding:1.5rem;}
+
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;}
+  .stat-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:1.1rem;text-align:center;}
+  .stat-number{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:700;color:var(--teal-dark);line-height:1;margin-bottom:.25rem;}
+  .stat-label{font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;}
+
+  /* CANDIDATE LIST */
+  .candidate-row{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin-bottom:.75rem;display:flex;align-items:center;gap:1rem;cursor:pointer;transition:all .2s;}
+  .candidate-row:hover{border-color:var(--teal);box-shadow:0 2px 8px rgba(13,107,110,.08);}
+  .cand-avatar{width:40px;height:40px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:var(--teal-dark);flex-shrink:0;}
+  .cand-row-info{flex:1;min-width:0;}
+  .cand-row-name{font-weight:500;font-size:.95rem;color:var(--text);margin-bottom:.25rem;}
+  .cand-row-grades{display:flex;flex-wrap:wrap;gap:.3rem;}
+  .grade-chip{font-size:.72rem;padding:.15rem .45rem;border-radius:3px;font-weight:600;}
+  .grade-a-plus{background:#dcfce7;color:#15803d;}
+  .grade-a{background:#dcfce7;color:#16a34a;}
+  .grade-a-minus{background:#dcfce7;color:#22c55e;}
+  .grade-b-plus{background:#dbeafe;color:#1d4ed8;}
+  .grade-b{background:#dbeafe;color:#2563eb;}
+  .grade-b-minus{background:#dbeafe;color:#3b82f6;}
+  .grade-c-plus{background:#fef9c3;color:#a16207;}
+  .grade-c{background:#fef9c3;color:#ca8a04;}
+  .grade-c-minus{background:#fef9c3;color:#eab308;}
+  .grade-d-plus{background:#ffedd5;color:#c2410c;}
+  .grade-d{background:#ffedd5;color:#ea580c;}
+  .grade-d-minus{background:#ffedd5;color:#f97316;}
+  .grade-f{background:#fee2e2;color:#dc2626;}
+  .grade-none{background:#f3f4f6;color:#9ca3af;}
+  .cand-row-avg{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--teal-dark);white-space:nowrap;flex-shrink:0;}
+
+  /* DETAIL OVERLAY */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;overflow-y:auto;padding:1rem;}
+  .overlay.open{display:flex;align-items:flex-start;justify-content:center;}
+  .overlay-box{background:var(--white);border-radius:10px;width:100%;max-width:680px;padding:2rem;margin:auto;position:relative;}
+  .overlay-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.25rem;cursor:pointer;color:var(--text-muted);}
+  .overlay-close:hover{color:var(--text);}
+  .overlay-name{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--teal-dark);margin-bottom:.2rem;}
+  .overlay-sub{color:var(--text-muted);font-size:.85rem;margin-bottom:1.5rem;}
+
+  /* GRADE SECTION */
+  .grade-section{border:1px solid var(--border);border-radius:8px;margin-bottom:1rem;overflow:hidden;}
+  .grade-section-header{padding:.875rem 1.1rem;background:var(--teal-light);display:flex;align-items:center;gap:.75rem;}
+  .grade-section-icon{font-size:1rem;}
+  .grade-section-title{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--teal-dark);flex:1;}
+  .grade-section-body{padding:1.1rem;}
+
+  /* GRADE SELECTOR */
+  .grade-label{font-size:.78rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem;display:block;}
+  .grade-pills{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem;}
+  .grade-pill{padding:.35rem .7rem;border-radius:4px;border:1.5px solid var(--border);background:var(--white);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;color:var(--text-muted);}
+  .grade-pill:hover{border-color:var(--teal);color:var(--teal);}
+  .grade-pill.selected-A\+,.grade-pill.selected-A,.grade-pill.selected-A-{border-color:#16a34a;background:#dcfce7;color:#15803d;}
+  .grade-pill.selected-B\+,.grade-pill.selected-B,.grade-pill.selected-B-{border-color:#2563eb;background:#dbeafe;color:#1d4ed8;}
+  .grade-pill.selected-C\+,.grade-pill.selected-C,.grade-pill.selected-C-{border-color:#ca8a04;background:#fef9c3;color:#a16207;}
+  .grade-pill.selected-D\+,.grade-pill.selected-D,.grade-pill.selected-D-{border-color:#ea580c;background:#ffedd5;color:#c2410c;}
+  .grade-pill.selected-F{border-color:#dc2626;background:#fee2e2;color:#dc2626;}
+
+  .comment-label{font-size:.78rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem;display:block;}
+  .comment-box{width:100%;padding:.6rem .8rem;border:1px solid var(--border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.875rem;color:var(--text);resize:vertical;min-height:70px;outline:none;transition:border-color .2s;}
+  .comment-box:focus{border-color:var(--teal);}
+
+  /* FINAL GRADE */
+  .final-grade-wrap{background:linear-gradient(135deg,var(--teal-dark) 0%,var(--teal) 100%);border-radius:8px;padding:1.5rem;margin-top:1.5rem;color:var(--white);}
+  .final-grade-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;margin-bottom:1rem;color:var(--white);}
+  .final-grade-display{display:flex;align-items:center;gap:1.5rem;margin-bottom:1rem;}
+  .final-grade-letter{font-family:'Cormorant Garamond',serif;font-size:4rem;font-weight:700;color:var(--gold);line-height:1;}
+  .final-grade-info{flex:1;}
+  .final-grade-label{font-size:.8rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem;}
+  .final-grade-desc{font-size:.875rem;color:rgba(255,255,255,.85);}
+  .final-comment-box{width:100%;padding:.75rem 1rem;border:1px solid rgba(255,255,255,.2);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.875rem;color:var(--white);background:rgba(255,255,255,.1);resize:vertical;min-height:80px;outline:none;transition:border-color .2s;}
+  .final-comment-box:focus{border-color:rgba(255,255,255,.5);}
+  .final-comment-box::placeholder{color:rgba(255,255,255,.4);}
+
+  .btn-save{background:var(--gold);color:var(--teal-dark);border:none;padding:.75rem 1.75rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:1rem;}
+  .btn-save:hover{background:#e0ba5c;transform:translateY(-1px);}
+
+  /* PRINT */
+  @media print {
+    .app-header,.overlay-close,.btn-save,.btn-logout{display:none!important;}
+    .overlay{position:static;background:none;padding:0;}
+    .overlay-box{box-shadow:none;max-width:100%;padding:1rem;}
+  }
+
+  .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--teal-dark);color:var(--white);padding:.75rem 1.5rem;border-radius:100px;font-size:.875rem;z-index:999;opacity:0;transition:all .3s ease;pointer-events:none;white-space:nowrap;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media(max-width:480px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="screen-loading" class="screen active">
+  <div class="spinner"></div>
+  <div class="loading-text">Carregando avaliações...</div>
+</div>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen">
+  <div class="login-box">
+    <div class="login-cross">✝</div>
+    <h2>Avaliação</h2>
+    <p class="login-sub">Painel do Escrivão · Zion Church</p>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="error-msg" id="login-error">Senha incorreta.</div>
+    </div>
+    <button class="btn-full" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="screen-main" class="screen">
+  <div class="app-header">
+    <div class="logo">Zion <span>Avaliação</span></div>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <span class="sync-dot"></span><span class="sync-label">ao vivo</span>
+      <button class="btn-logout" onclick="showScreen('screen-login')">Sair</button>
+    </div>
+  </div>
+  <div class="main-content">
+    <div class="stats-row" id="stats-row"></div>
+    <div id="candidates-list"></div>
+  </div>
+</div>
+
+<!-- CANDIDATE DETAIL OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="overlay-box" id="overlay-box"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDNwTIlTjnNEX89qHUzLePaO4joPVNvB6Y",
+  authDomain: "ordenacao-presbiterio-20-38fef.firebaseapp.com",
+  databaseURL: "https://ordenacao-presbiterio-20-38fef-default-rtdb.firebaseio.com",
+  projectId: "ordenacao-presbiterio-20-38fef",
+  storageBucket: "ordenacao-presbiterio-20-38fef.firebasestorage.app",
+  messagingSenderId: "152689970854",
+  appId: "1:152689970854:web:ee724fc80c85a9f8b32e67"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+
+const PASS = '3712';
+
+const GRADES = ['A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','F'];
+
+const GRADE_POINTS = {
+  'A+':4.3,'A':4.0,'A-':3.7,
+  'B+':3.3,'B':3.0,'B-':2.7,
+  'C+':2.3,'C':2.0,'C-':1.7,
+  'D+':1.3,'D':1.0,'D-':0.7,
+  'F':0.0
+};
+
+function pointsToGrade(p) {
+  if(p >= 4.15) return 'A+';
+  if(p >= 3.85) return 'A';
+  if(p >= 3.5)  return 'A-';
+  if(p >= 3.15) return 'B+';
+  if(p >= 2.85) return 'B';
+  if(p >= 2.5)  return 'B-';
+  if(p >= 2.15) return 'C+';
+  if(p >= 1.85) return 'C';
+  if(p >= 1.5)  return 'C-';
+  if(p >= 1.15) return 'D+';
+  if(p >= 0.85) return 'D';
+  if(p >= 0.5)  return 'D-';
+  return 'F';
+}
+
+const SECTIONS = [
+  {id:'teologia_sistematica', icon:'📖', title:'Dissertação de Teologia Sistemática'},
+  {id:'doutrina_crista',      icon:'✝️', title:'Princípios da Doutrina Cristã'},
+  {id:'historia_igreja',      icon:'🏛️', title:'Dissertação da História da Igreja'},
+  {id:'analise_pessoal',      icon:'✍️', title:'Análise Pessoal'},
+  {id:'leitura_livros',       icon:'📚', title:'Leitura, Resumo e Opinião de Livros'},
+  {id:'cosmovisao',           icon:'🌍', title:'Cosmovisão Bíblica'},
+];
+
+// State
+let allCandidates = {};
+let currentKey = null;
+
+// Helpers
+const ini = n => n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const escH = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const escQ = s => (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+
+function gradeClass(g) {
+  if(!g) return 'grade-none';
+  return 'grade-' + g.replace('+','plus').replace('-','minus').toLowerCase();
+}
+
+function calcAvg(c) {
+  const grades = SECTIONS.map(s => c.grades?.[s.id]?.grade).filter(Boolean);
+  if(!grades.length) return null;
+  const pts = grades.map(g => GRADE_POINTS[g] || 0);
+  const avg = pts.reduce((a,b)=>a+b,0) / pts.length;
+  return pointsToGrade(avg);
+}
+
+let toastT;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+// Screens
+window.showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+};
+
+window.doLogin = () => {
+  const v = document.getElementById('login-pass').value;
+  if(v === PASS) {
+    document.getElementById('login-error').style.display = 'none';
+    document.getElementById('login-pass').value = '';
+    showScreen('screen-main');
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+};
+
+// Init
+window.addEventListener('load', async () => {
+  try {
+    const snap = await get(ref(db,'candidates'));
+    allCandidates = snap.val() || {};
+    showScreen('screen-login');
+    onValue(ref(db,'candidates'), snap => {
+      allCandidates = snap.val() || {};
+      const active = document.querySelector('.screen.active');
+      if(active?.id === 'screen-main') renderMain();
+      if(currentKey && document.getElementById('overlay').classList.contains('open')) {
+        renderDetail(currentKey);
+      }
+    });
+  } catch(e) {
+    document.querySelector('.loading-text').textContent = 'Erro de conexão. Recarregue a página.';
+  }
+});
+
+// Main list
+function renderMain() {
+  const cands = Object.entries(allCandidates);
+  const total = cands.length;
+  const avaliados = cands.filter(([,c]) => SECTIONS.some(s => c.grades?.[s.id]?.grade)).length;
+  const concluidos = cands.filter(([,c]) => SECTIONS.every(s => c.grades?.[s.id]?.grade)).length;
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card"><div class="stat-number">${total}</div><div class="stat-label">Candidatos</div></div>
+    <div class="stat-card"><div class="stat-number">${avaliados}</div><div class="stat-label">Em avaliação</div></div>
+    <div class="stat-card"><div class="stat-number">${concluidos}</div><div class="stat-label">Avaliações completas</div></div>`;
+
+  if(!total) {
+    document.getElementById('candidates-list').innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem;">Nenhum candidato cadastrado no app principal.</p>';
+    return;
+  }
+
+  document.getElementById('candidates-list').innerHTML = cands.map(([key,c]) => {
+    const avg = calcAvg(c);
+    const grades = SECTIONS.map(s => {
+      const g = c.grades?.[s.id]?.grade;
+      return g ? `<span class="grade-chip ${gradeClass(g)}">${escH(g)}</span>` : '';
+    }).filter(Boolean).join('');
+
+    return `<div class="candidate-row" onclick="openDetail('${escQ(key)}')">
+      <div class="cand-avatar">${ini(c.name)}</div>
+      <div class="cand-row-info">
+        <div class="cand-row-name">${escH(c.name)}</div>
+        <div class="cand-row-grades">${grades || '<span style="font-size:.78rem;color:var(--text-muted)">Sem avaliação</span>'}</div>
+      </div>
+      <div class="cand-row-avg">${avg ? escH(avg) : '—'}</div>
+    </div>`;
+  }).join('');
+}
+
+// Detail
+window.openDetail = key => {
+  currentKey = key;
+  renderDetail(key);
+  document.getElementById('overlay').classList.add('open');
+};
+
+function renderDetail(key) {
+  const c = allCandidates[key];
+  if(!c) return;
+  const avg = calcAvg(c);
+
+  let html = `
+    <button class="overlay-close" onclick="closeDetail()">✕</button>
+    <div class="overlay-name">${escH(c.name)}</div>
+    <div class="overlay-sub">Avaliação das dissertações · Zion Church 2026</div>`;
+
+  // Section grades
+  SECTIONS.forEach(sec => {
+    const gd = c.grades?.[sec.id] || {};
+    const selGrade = gd.grade || '';
+    const comment = gd.comment || '';
+
+    const pills = GRADES.map(g => {
+      const sel = selGrade === g ? `selected-${g}` : '';
+      return `<button class="grade-pill ${sel}" onclick="selectGrade('${escQ(key)}','${escQ(sec.id)}','${g}')">${g}</button>`;
+    }).join('');
+
+    html += `<div class="grade-section">
+      <div class="grade-section-header">
+        <span class="grade-section-icon">${sec.icon}</span>
+        <span class="grade-section-title">${sec.title}</span>
+        ${selGrade ? `<span class="grade-chip ${gradeClass(selGrade)}" style="font-size:.85rem;padding:.2rem .6rem;">${escH(selGrade)}</span>` : ''}
+      </div>
+      <div class="grade-section-body">
+        <span class="grade-label">Nota</span>
+        <div class="grade-pills">${pills}</div>
+        <span class="comment-label">Comentários</span>
+        <textarea class="comment-box" id="comment-${escQ(sec.id)}" placeholder="Observações sobre esta seção..."
+          onblur="saveComment('${escQ(key)}','${escQ(sec.id)}')">${escH(comment)}</textarea>
+      </div>
+    </div>`;
+  });
+
+  // Final grade
+  const finalComment = c.grades?.final?.comment || '';
+  html += `<div class="final-grade-wrap">
+    <div class="final-grade-title">Parecer Final</div>
+    <div class="final-grade-display">
+      <div class="final-grade-letter">${avg || '—'}</div>
+      <div class="final-grade-info">
+        <div class="final-grade-label">Média geral</div>
+        <div class="final-grade-desc">${avg ? descGrade(avg) : 'Nenhuma nota atribuída ainda'}</div>
+      </div>
+    </div>
+    <label class="comment-label" style="color:rgba(255,255,255,.6);">Parecer do Escrivão</label>
+    <textarea class="final-comment-box" id="final-comment" placeholder="Parecer geral sobre o candidato..."
+      onblur="saveFinalComment('${escQ(key)}')">${escH(finalComment)}</textarea>
+    <button class="btn-save" onclick="saveAll('${escQ(key)}')">💾 Salvar tudo</button>
+  </div>`;
+
+  document.getElementById('overlay-box').innerHTML = html;
+}
+
+function descGrade(g) {
+  const map = {
+    'A+':'Excelência excepcional','A':'Excelente','A-':'Muito bom',
+    'B+':'Bom com destaque','B':'Bom','B-':'Bom com ressalvas',
+    'C+':'Satisfatório','C':'Regular','C-':'Regular com pendências',
+    'D+':'Abaixo do esperado','D':'Insuficiente','D-':'Muito insuficiente',
+    'F':'Reprovado'
+  };
+  return map[g] || '';
+}
+
+window.selectGrade = async (key, secId, grade) => {
+  await update(ref(db, `candidates/${key}/grades/${secId}`), { grade });
+  showToast(`Nota ${grade} salva`);
+};
+
+window.saveComment = async (key, secId) => {
+  const el = document.getElementById(`comment-${secId}`);
+  if(!el) return;
+  await update(ref(db, `candidates/${key}/grades/${secId}`), { comment: el.value });
+};
+
+window.saveFinalComment = async key => {
+  const el = document.getElementById('final-comment');
+  if(!el) return;
+  await update(ref(db, `candidates/${key}/grades/final`), { comment: el.value });
+};
+
+window.saveAll = async key => {
+  // Save all comments
+  for(const sec of SECTIONS) {
+    const el = document.getElementById(`comment-${sec.id}`);
+    if(el) await update(ref(db, `candidates/${key}/grades/${sec.id}`), { comment: el.value });
+  }
+  const finalEl = document.getElementById('final-comment');
+  if(finalEl) await update(ref(db, `candidates/${key}/grades/final`), { comment: finalEl.value });
+  showToast('✓ Tudo salvo!');
+};
+
+window.closeDetail = () => {
+  document.getElementById('overlay').classList.remove('open');
+  currentKey = null;
+};
+
+document.getElementById('overlay').addEventListener('click', e => {
+  if(e.target === document.getElementById('overlay')) closeDetail();
+});
+</script>
+</body>
+</html>
